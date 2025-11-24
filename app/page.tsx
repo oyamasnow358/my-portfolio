@@ -3,9 +3,9 @@ import { useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { 
   ArrowUpRight, X, User, Layers, 
-  Cpu, Zap, Globe, Code, Database, Search, Activity, FileText, Brain, BookOpen
+  Cpu, Zap, Globe, Code, Database, 
+  Lightbulb, Map, Lock
 } from "lucide-react";
-
 // ==========================================
 // ▼ データ設定エリア (ここを書き換えてください)
 // ==========================================
@@ -89,7 +89,7 @@ const tools = [
   },
 ];
 
-// 3. プロフィールとシステム構成の中身
+// 3. 情報エリアの中身（管理者・システム・残り2つ）
 const detailContent = {
   profile: {
     title: "ADMINISTRATOR",
@@ -121,6 +121,28 @@ const detailContent = {
           <TechSpec icon={<Layers />} label="Animation" value="Framer Motion" />
           <TechSpec icon={<Globe />} label="Infrastructure" value="Vercel (Edge Network)" />
         </div>
+      </div>
+    )
+  },
+  // ★仮の項目1（後で書き換えてください）
+  concept: {
+    title: "CONCEPT",
+    subtitle: "Future Vision",
+    content: (
+      <div className="text-gray-400 py-10 text-center">
+        <Lightbulb size={48} className="mx-auto mb-4 opacity-50" />
+        <p>現在構想中です。<br/>Coming Soon...</p>
+      </div>
+    )
+  },
+  // ★仮の項目2（後で書き換えてください）
+  roadmap: {
+    title: "ROADMAP",
+    subtitle: "Development Plan",
+    content: (
+      <div className="text-gray-400 py-10 text-center">
+        <Map size={48} className="mx-auto mb-4 opacity-50" />
+        <p>今後の開発ロードマップを掲載予定です。<br/>Coming Soon...</p>
       </div>
     )
   }
@@ -208,35 +230,45 @@ export default function Home() {
           </motion.div>
         </main>
 
-        {/* 2. 管理者・システム情報 (トップへ移動) */}
-        <section className="grid grid-cols-1 md:grid-cols-2 border-y border-white/20">
-          <div 
+        {/* 2. 管理・情報エリア (4カラム・コックピット風デザイン) */}
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-y border-white/10">
+          
+          {/* カード 1: ADMINISTRATOR */}
+          <InfoCard 
+            icon={<User size={24} />}
+            label="ADMINISTRATOR"
+            sub="PROFILE"
             onClick={() => setSelectedId('profile')}
-            className="p-12 border-b md:border-b-0 md:border-r border-white/20 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group flex flex-col justify-between h-[250px]"
-          >
-            <div className="flex justify-between w-full">
-               <User className="text-gray-500 group-hover:text-black" size={28} />
-               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-            </div>
-            <ScrollReveal>
-              <h3 className="text-3xl font-bold mb-1">ADMINISTRATOR</h3>
-              <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-widest">PROFILE & CONTACT</p>
-            </ScrollReveal>
-          </div>
+            delay={0}
+          />
 
-          <div 
+          {/* カード 2: SYSTEM */}
+          <InfoCard 
+            icon={<Cpu size={24} />}
+            label="SYSTEM"
+            sub="ARCHITECTURE"
             onClick={() => setSelectedId('system')}
-            className="p-12 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group flex flex-col justify-between h-[250px]"
-          >
-             <div className="flex justify-between w-full">
-               <Cpu className="text-gray-500 group-hover:text-black" size={28} />
-               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-            </div>
-            <ScrollReveal>
-              <h3 className="text-3xl font-bold mb-1">SYSTEM</h3>
-              <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-widest">TECHNOLOGY STACK</p>
-            </ScrollReveal>
-          </div>
+            delay={0.1}
+          />
+
+          {/* カード 3: CONCEPT (仮) */}
+          <InfoCard 
+            icon={<Lightbulb size={24} />}
+            label="CONCEPT"
+            sub="VISION"
+            onClick={() => setSelectedId('concept')}
+            delay={0.2}
+          />
+
+          {/* カード 4: ROADMAP (仮) */}
+          <InfoCard 
+            icon={<Map size={24} />}
+            label="ROADMAP"
+            sub="PLANNING"
+            onClick={() => setSelectedId('roadmap')}
+            delay={0.3}
+          />
+
         </section>
 
         {/* 3. アプリ一覧 */}
@@ -273,7 +305,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. 分析ツール (日本語メイン + 英語サブ) */}
+        {/* 4. 分析ツール (日本語メイン) */}
         <section className="p-6 md:p-12">
           <ScrollReveal>
             <div className="flex flex-col md:flex-row justify-between items-end mb-12">
@@ -289,12 +321,10 @@ export default function Home() {
                   href={item.href} 
                   className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-8 flex flex-col justify-center group h-40 block"
                 >
-                  {/* 日本語メイン */}
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-xl">{item.jp}</span>
                     <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  {/* 英語サブ */}
                   <span className="text-xs font-mono text-gray-500 group-hover:text-black/60 tracking-tight">
                     {item.en}
                   </span>
@@ -309,7 +339,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* --- モーダル (詳細表示) --- */}
+      {/* --- モーダル --- */}
       <AnimatePresence>
         {selectedId && (
           <motion.div 
@@ -355,6 +385,41 @@ export default function Home() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// --- 部品: 情報エリア用カード (他と違うデザイン) ---
+function InfoCard({ icon, label, sub, onClick, delay }: { icon: any, label: string, sub: string, onClick: () => void, delay: number }) {
+  return (
+    <ScrollReveal delay={delay}>
+      <div 
+        onClick={onClick}
+        className="
+          h-[220px] p-8 
+          border-b md:border-r border-white/10 
+          bg-neutral-900/40 
+          hover:bg-blue-900/10 hover:border-blue-500/50 
+          transition-all duration-300 
+          cursor-pointer group 
+          flex flex-col justify-between
+          relative overflow-hidden
+        "
+      >
+        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+        
+        <div className="flex justify-between w-full text-gray-500 group-hover:text-blue-400 transition-colors">
+          {icon}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <ArrowUpRight size={16} />
+          </div>
+        </div>
+        
+        <div>
+          <p className="text-[10px] font-mono text-gray-600 mb-2 group-hover:text-blue-300/70">{sub}</p>
+          <h3 className="text-xl font-bold tracking-wider group-hover:text-white transition-colors">{label}</h3>
+        </div>
+      </div>
+    </ScrollReveal>
   );
 }
 
