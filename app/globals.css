@@ -2,19 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ブラウザの初期設定を強制リセット */
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
+  background-color: #000000;
+  color: #ffffff;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: sans-serif;
-  -webkit-font-smoothing: antialiased; /* 文字をきれいに見せる */
+  background-color: #000000;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* 横揺れ防止 */
 }
 
-/* グリッドの線をきれいに出すための設定 */
-.grid-border {
-  border-color: #333;
+/* リンクの青色と下線を消す */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* スクロールバーも黒くする */
+::-webkit-scrollbar {
+  width: 10px;
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 5px;
 }

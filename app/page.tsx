@@ -1,146 +1,138 @@
 "use client";
 import { motion } from "framer-motion";
-import { 
-  Search, Activity, Brain, FileText, 
-  Video, Layers, BarChart, ExternalLink,
-  Database
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Home() {
   
-  // アニメーション設定（ふわっと出る）
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  // ヌルっと動く設定
+  const anim = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
       
-      {/* --- 1. メインビジュアル（一番上の文字） --- */}
-      <main className="flex-grow pt-24 pb-16 px-6 md:px-12 border-b border-neutral-800">
+      {/* --- ヘッダー --- */}
+      <header className="flex justify-between items-center p-8 border-b border-white/20 fixed w-full top-0 bg-black/80 backdrop-blur z-50">
+        <h1 className="text-sm font-bold tracking-widest">SUPPORT HUB</h1>
+        <div className="text-xs text-gray-500">VER 2.0</div>
+      </header>
+
+      {/* --- メインビジュアル --- */}
+      <main className="pt-40 px-6 md:px-12 pb-20 border-b border-white/20">
         <motion.div 
           initial="hidden" 
           animate="visible" 
-          variants={fadeInUp}
-          className="max-w-5xl mx-auto"
+          variants={anim}
         >
-          <p className="text-blue-500 font-bold tracking-widest mb-4 text-sm">
-            SPECIAL SUPPORT HUB
-          </p>
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-8">
-            Data Driven<br />
-            Education.
-          </h1>
-          <p className="text-neutral-400 text-lg max-w-2xl leading-relaxed">
-            特別支援教育の現場に「根拠」と「効率」を。<br />
-            指導案の作成から、専門的な統計分析までをワンストップで。
+          <h2 className="text-7xl md:text-9xl font-bold leading-[0.9] tracking-tighter mb-10">
+            SPECIAL<br />
+            EDUCATION<br />
+            <span className="text-gray-600">SUPPORT.</span>
+          </h2>
+          <p className="text-gray-400 max-w-xl text-lg leading-relaxed">
+            データとAIで、教育の解像度を上げる。<br />
+            指導案作成から統計分析までを一元化したプラットフォーム。
           </p>
         </motion.div>
       </main>
 
-      {/* --- 2. メインアプリ（大きなグリッド） --- */}
-      {/* ここが一番使う機能です */}
-      <section className="grid grid-cols-1 md:grid-cols-2 border-b border-neutral-800">
-        
-        {/* 左側：主要ツール */}
-        <div className="grid grid-cols-1 divide-y border-neutral-800 md:border-r border-b md:border-b-0">
+      {/* --- アプリ一覧（グリッドレイアウト） --- */}
+      <section className="border-b border-white/20">
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          
+          {/* 左列 */}
+          <div className="border-b md:border-b-0 md:border-r border-white/20">
             <AppCard 
-              title="指導支援内容検索" 
-              desc="困りごとに応じた具体的支援策を検索"
-              icon={<Search />}
-              num="01"
+              num="01" 
+              title="指導支援検索" 
+              desc="SEARCH SUPPORT" 
+              link="#"
             />
             <AppCard 
-              title="発達チャート作成" 
-              desc="発達段階を可視化・記録・保存"
-              icon={<Activity />}
-              num="02"
+              num="02" 
+              title="発達チャート" 
+              desc="DEVELOPMENT CHART" 
+              link="#"
             />
-            <AppCard 
+             <AppCard 
+              num="03" 
               title="AI指導案作成" 
-              desc="基本情報から学習指導案を自動生成"
-              icon={<FileText />}
-              num="03"
+              desc="LESSON PLAN AI" 
+              link="#"
             />
-        </div>
-
-        {/* 右側：その他のツール */}
-        <div className="grid grid-cols-1 divide-y border-neutral-800">
-            <AppCard 
-              title="AI計画作成アシスト" 
-              desc="個別の指導計画プロンプト生成"
-              icon={<Brain />}
-              num="04"
-            />
-            <AppCard 
-              title="早引き学習指導要領" 
-              desc="知的段階ごとの内容を素早く検索"
-              icon={<Layers />}
-              num="05"
-            />
-            {/* 大きな注目カード */}
-            <a href="#" className="group p-8 md:p-12 bg-neutral-900/50 hover:bg-blue-900/20 transition-colors h-full flex flex-col justify-center">
-              <div className="flex items-center gap-3 mb-4 text-blue-400">
-                <Database size={24} />
-                <span className="text-xs font-bold border border-blue-900 px-2 py-1 rounded">NEW</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-2">授業カードライブラリ</h3>
-              <p className="text-neutral-400 text-sm">全国の先生方の授業アイデアを共有・検索</p>
-            </a>
-        </div>
-      </section>
-
-      {/* --- 3. 分析ツールリスト（シンプルに羅列） --- */}
-      <section className="py-16 px-6 md:px-12 border-b border-neutral-800 bg-neutral-900/20">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-sm font-bold text-neutral-500 mb-8 tracking-widest">RESEARCH & ANALYSIS TOOLS</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <ToolLink name="応用行動分析 (ABA)" />
-            <ToolLink name="機能的行動評価" />
-            <ToolLink name="アンケート統計分析" />
-            <ToolLink name="多変量回帰分析" />
-            <ToolLink name="t検定・検定ツール" />
-            <ToolLink name="ノンパラメトリック分析" />
           </div>
+
+          {/* 右列 */}
+          <div>
+            <AppCard 
+              num="04" 
+              title="計画作成AI" 
+              desc="PLANNING ASSIST" 
+              link="#"
+            />
+            <AppCard 
+              num="05" 
+              title="学習指導要領" 
+              desc="GUIDELINES" 
+              link="#"
+            />
+            {/* 巨大なリンクブロック */}
+            <a href="#" className="block h-[300px] p-10 relative group bg-neutral-900 hover:bg-white transition-colors duration-500 border-t border-white/20">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-mono text-gray-500 group-hover:text-black">NEW ARRIVAL</span>
+                <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              </div>
+              <div className="absolute bottom-10 left-10">
+                <h3 className="text-4xl font-bold mb-2 group-hover:text-black">授業カード<br/>ライブラリ</h3>
+                <p className="text-gray-500 text-sm group-hover:text-black">全国の実践事例を共有・検索</p>
+              </div>
+            </a>
+          </div>
+
         </div>
       </section>
 
-      {/* --- 4. フッター --- */}
-      <footer className="py-12 px-6 text-center">
-        <p className="text-neutral-600 text-xs">
-          © 2025 Special Education Support Hub. / Administrator: Koyama
-        </p>
+      {/* --- 分析ツール（リスト表示） --- */}
+      <section className="p-6 md:p-12">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+          <h2 className="text-4xl font-bold">ANALYSIS TOOLS</h2>
+          <p className="text-gray-500 text-sm">研究・分析用ツール群</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/20 border border-white/20">
+          {[
+            "応用行動分析 (ABA)", "機能的行動評価", "アンケート統計分析",
+            "多変量回帰分析", "t検定・検定ツール", "ノンパラメトリック分析"
+          ].map((item, i) => (
+            <a key={i} href="#" className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-6 flex justify-between items-center group h-32">
+              <span className="font-bold text-lg">{item}</span>
+              <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <footer className="p-12 text-center text-gray-600 text-xs border-t border-white/20">
+        &copy; 2025 SPECIAL EDUCATION SUPPORT HUB.
       </footer>
     </div>
   );
 }
 
-// --- 部品：アプリカード ---
-function AppCard({ title, desc, icon, num }: { title: string, desc: string, icon: any, num: string }) {
+// --- 部品：カードコンポーネント ---
+function AppCard({ num, title, desc, link }: { num: string, title: string, desc: string, link: string }) {
   return (
-    <a href="#" className="group block p-8 md:p-10 hover:bg-neutral-900 transition-all duration-300 relative">
-      <div className="flex justify-between items-start mb-6">
-        <span className="text-neutral-600 font-mono text-xs">APP {num}</span>
-        <div className="text-neutral-500 group-hover:text-white transition-colors transform group-hover:scale-110">
-          {icon}
-        </div>
+    <a href={link} className="block p-10 border-b border-white/20 hover:bg-white hover:text-black transition-colors duration-500 group min-h-[200px] flex flex-col justify-between">
+      <div className="flex justify-between w-full">
+        <span className="font-mono text-xs text-gray-500 group-hover:text-black/60">{num}</span>
+        <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
       </div>
-      <h3 className="text-xl font-bold mb-2 group-hover:text-blue-400 transition-colors">{title}</h3>
-      <p className="text-sm text-neutral-500">{desc}</p>
-      <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all">
-        <ExternalLink size={16} className="text-blue-500" />
+      <div>
+        <h3 className="text-3xl font-bold mb-1">{title}</h3>
+        <p className="text-xs text-gray-500 tracking-wider group-hover:text-black/60">{desc}</p>
       </div>
-    </a>
-  );
-}
-
-// --- 部品：ツールリンク ---
-function ToolLink({ name }: { name: string }) {
-  return (
-    <a href="#" className="flex items-center justify-between p-4 border border-neutral-800 rounded hover:border-neutral-600 hover:bg-neutral-800 transition-all group">
-      <span className="text-sm text-neutral-300 group-hover:text-white">{name}</span>
-      <BarChart size={14} className="text-neutral-600 group-hover:text-blue-400" />
     </a>
   );
 }
