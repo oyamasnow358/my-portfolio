@@ -3,24 +3,93 @@ import { useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { 
   ArrowUpRight, X, User, Layers, 
-  Cpu, Zap, Globe, Code, Database 
+  Cpu, Zap, Globe, Code, Database, Search, Activity, FileText, Brain, BookOpen
 } from "lucide-react";
 
-// --- データ定義 ---
+// ==========================================
+// ▼ データ設定エリア (ここを書き換えてください)
+// ==========================================
+
+// 1. アプリケーション一覧
 const apps = [
-  { id: "01", title: "指導支援検索", desc: "SEARCH SUPPORT", href: "#" },
-  { id: "02", title: "発達チャート", desc: "DEVELOPMENT CHART", href: "#" },
-  { id: "03", title: "AI指導案作成", desc: "LESSON PLAN AI", href: "#" },
-  { id: "04", title: "計画作成AI", desc: "PLANNING ASSIST", href: "#" },
-  { id: "05", title: "学習指導要領", desc: "GUIDELINES", href: "#" },
+  { 
+    id: "01", 
+    title: "指導支援検索", 
+    en: "SEARCH SUPPORT", 
+    // ★ここにアプリのURLを入れてください (例: "https://myapp.com/search")
+    href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" 
+  },
+  { 
+    id: "02", 
+    title: "発達チャート", 
+    en: "DEVELOPMENT CHART", 
+    // ★ここにアプリのURLを入れてください
+    href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" 
+  },
+  { 
+    id: "03", 
+    title: "AI 指導案作成", 
+    en: "LESSON PLAN AI", 
+    // ★ここにアプリのURLを入れてください
+    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" 
+  },
+  { 
+    id: "04", 
+    title: "AI 支援/指導計画作成", 
+    en: "PLANNING ASSIST", 
+    // ★ここにアプリのURLを入れてください
+    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" 
+  },
+  { 
+    id: "05", 
+    title: "早引き学習指導要領", 
+    en: "GUIDELINES", 
+    // ここにアプリのURLを入れてください
+    href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" 
+  },
 ];
 
+// 2. 分析ツール一覧 (日本語 + 英語のかっこいい表記)
 const tools = [
-  "Applied Behavior Analysis (ABA)", "Functional Behavior Assessment", 
-  "Survey Statistical Analysis", "Multivariate Regression", 
-  "T-Test & Statistical Tools", "Non-Parametric Analysis"
+  { 
+    jp: "応用行動分析", 
+    en: "Applied Behavior Analysis (ABA)", 
+    // ★ここにツールのURLを入れてください
+    href: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamlit.app/" 
+  },
+  { 
+    jp: "機能的行動評価", 
+    en: "Functional Behavior Assessment", 
+    // ★ここにツールのURLを入れてください
+    href: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/" 
+  },
+  { 
+    jp: "アンケート統計分析", 
+    en: "Survey Statistical Analysis", 
+    // ★ここにツールのURLを入れてください
+    href: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" 
+  },
+  { 
+    jp: "多変量回帰分析", 
+    en: "Multivariate Regression", 
+    // ★ここにツールのURLを入れてください
+    href: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" 
+  },
+  { 
+    jp: "t検定・統計ツール", 
+    en: "T-Test & Statistical Tools", 
+    // ★ここにツールのURLを入れてください
+    href: "https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" 
+  },
+  { 
+    jp: "ノンパラメトリック分析", 
+    en: "Non-Parametric Analysis", 
+    // ★ここにツールのURLを入れてください
+    href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" 
+  },
 ];
 
+// 3. プロフィールとシステム構成の中身
 const detailContent = {
   profile: {
     title: "ADMINISTRATOR",
@@ -57,18 +126,22 @@ const detailContent = {
   }
 };
 
-// --- メインコンポーネント ---
+// ==========================================
+// ▲ 設定エリア終了
+// ==========================================
+
+
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   
-  // 背景パララックス
+  // パララックス効果
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
       
-      {/* 背景画像 (軽量化: blurを削除) */}
+      {/* 背景画像 */}
       <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
         <motion.div 
           style={{ y }} 
@@ -83,17 +156,15 @@ export default function Home() {
         <div className="text-xs text-gray-500 font-mono">VER 2.0</div>
       </header>
 
-      {/* コンテンツ全体 */}
       <div className="relative z-10">
         
         {/* 1. メインビジュアル */}
-        <main className="pt-48 px-6 md:px-12 pb-32 border-b border-white/20">
+        <main className="pt-48 px-6 md:px-12 pb-20">
           <motion.div 
              initial={{ opacity: 0 }}
              animate={{ opacity: 1 }}
              transition={{ duration: 1 }}
           >
-            {/* テキストアニメーション */}
             <div className="overflow-hidden mb-2">
               <motion.h2 
                 initial={{ y: 100 }}
@@ -137,7 +208,38 @@ export default function Home() {
           </motion.div>
         </main>
 
-        {/* 2. アプリ一覧 */}
+        {/* 2. 管理者・システム情報 (トップへ移動) */}
+        <section className="grid grid-cols-1 md:grid-cols-2 border-y border-white/20">
+          <div 
+            onClick={() => setSelectedId('profile')}
+            className="p-12 border-b md:border-b-0 md:border-r border-white/20 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group flex flex-col justify-between h-[250px]"
+          >
+            <div className="flex justify-between w-full">
+               <User className="text-gray-500 group-hover:text-black" size={28} />
+               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
+            </div>
+            <ScrollReveal>
+              <h3 className="text-3xl font-bold mb-1">ADMINISTRATOR</h3>
+              <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-widest">PROFILE & CONTACT</p>
+            </ScrollReveal>
+          </div>
+
+          <div 
+            onClick={() => setSelectedId('system')}
+            className="p-12 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group flex flex-col justify-between h-[250px]"
+          >
+             <div className="flex justify-between w-full">
+               <Cpu className="text-gray-500 group-hover:text-black" size={28} />
+               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
+            </div>
+            <ScrollReveal>
+              <h3 className="text-3xl font-bold mb-1">SYSTEM</h3>
+              <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-widest">TECHNOLOGY STACK</p>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        {/* 3. アプリ一覧 */}
         <section className="border-b border-white/20">
           <div className="grid grid-cols-1 md:grid-cols-2">
             <div className="border-b md:border-b-0 md:border-r border-white/20">
@@ -151,7 +253,11 @@ export default function Home() {
               ))}
               
               <ScrollReveal>
-                <a href="#" className="block h-[300px] p-10 relative group bg-neutral-900/50 hover:bg-white transition-colors duration-500 border-t border-white/20 overflow-hidden">
+                <a 
+                  // ★ここに「授業カードライブラリ」のURLを入れてください
+                  href="#" 
+                  className="block h-[300px] p-10 relative group bg-neutral-900/50 hover:bg-white transition-colors duration-500 border-t border-white/20 overflow-hidden"
+                >
                   <div className="flex justify-between items-start relative z-10">
                     <span className="text-xs font-mono text-gray-500 group-hover:text-black">NEW ARRIVAL</span>
                     <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -167,38 +273,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. プロフィール & システム */}
-        <section className="grid grid-cols-1 md:grid-cols-2 border-b border-white/20">
-          <div 
-            onClick={() => setSelectedId('profile')}
-            className="p-16 border-b md:border-b-0 md:border-r border-white/20 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group h-[400px] flex flex-col justify-between"
-          >
-            <div className="flex justify-between">
-               <User className="text-gray-500 group-hover:text-black" size={32} />
-               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-            </div>
-            <ScrollReveal>
-              <h3 className="text-4xl font-bold mb-2">ADMINISTRATOR</h3>
-              <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">WHO IS DEVELOPING?</p>
-            </ScrollReveal>
-          </div>
-
-          <div 
-            onClick={() => setSelectedId('system')}
-            className="p-16 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group h-[400px] flex flex-col justify-between"
-          >
-            <div className="flex justify-between">
-               <Cpu className="text-gray-500 group-hover:text-black" size={32} />
-               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-            </div>
-            <ScrollReveal>
-              <h3 className="text-4xl font-bold mb-2">SYSTEM</h3>
-              <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">HOW IT WORKS?</p>
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* 4. 分析ツール */}
+        {/* 4. 分析ツール (日本語メイン + 英語サブ) */}
         <section className="p-6 md:p-12">
           <ScrollReveal>
             <div className="flex flex-col md:flex-row justify-between items-end mb-12">
@@ -207,12 +282,22 @@ export default function Home() {
             </div>
           </ScrollReveal>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/20 border border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/20 border border-white/20">
             {tools.map((item, i) => (
               <ScrollReveal key={i} delay={i * 0.05}>
-                <a href="#" className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-6 flex justify-between items-center group h-32 block">
-                  <span className="font-bold text-lg">{item}</span>
-                  <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                <a 
+                  href={item.href} 
+                  className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-8 flex flex-col justify-center group h-40 block"
+                >
+                  {/* 日本語メイン */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-xl">{item.jp}</span>
+                    <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  {/* 英語サブ */}
+                  <span className="text-xs font-mono text-gray-500 group-hover:text-black/60 tracking-tight">
+                    {item.en}
+                  </span>
                 </a>
               </ScrollReveal>
             ))}
@@ -224,7 +309,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* --- モーダル --- */}
+      {/* --- モーダル (詳細表示) --- */}
       <AnimatePresence>
         {selectedId && (
           <motion.div 
@@ -239,7 +324,7 @@ export default function Home() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-neutral-900 border border-white/20 p-8 md:p-12 max-w-2xl w-full relative"
+              className="bg-neutral-900 border border-white/20 p-8 md:p-12 max-w-2xl w-full relative shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <button 
@@ -269,7 +354,6 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
@@ -282,11 +366,11 @@ function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, dela
       whileInView="visible"
       viewport={{ once: false, amount: 0.2 }} 
       variants={{
-        hidden: { opacity: 0, y: 50 },
+        hidden: { opacity: 0, y: 30 },
         visible: { 
           opacity: 1, 
           y: 0,
-          transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: delay }
+          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: delay }
         }
       }}
     >
@@ -296,7 +380,7 @@ function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, dela
 }
 
 // --- 部品: アプリカード ---
-function AppCard({ id, title, desc, href }: { id: string, title: string, desc: string, href: string }) {
+function AppCard({ id, title, en, href }: { id: string, title: string, en: string, href: string }) {
   return (
     <ScrollReveal>
       <a href={href} className="block p-10 border-b border-white/20 hover:bg-white hover:text-black transition-colors duration-500 group min-h-[200px] flex flex-col justify-between">
@@ -306,7 +390,7 @@ function AppCard({ id, title, desc, href }: { id: string, title: string, desc: s
         </div>
         <div>
           <h3 className="text-3xl font-bold mb-1">{title}</h3>
-          <p className="text-xs text-gray-500 tracking-wider group-hover:text-black/60">{desc}</p>
+          <p className="text-xs text-gray-500 tracking-wider group-hover:text-black/60 font-mono">{en}</p>
         </div>
       </a>
     </ScrollReveal>
