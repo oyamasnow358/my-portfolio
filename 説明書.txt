@@ -1,0 +1,4 @@
+WEBサイトは
+このように運営されているUser
+
+Next.js（React）+ Tailwind CSS + Framer Motion + Vercel（無料）
