@@ -2,7 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+}
+
 body {
-  background: #000; /* 背景を真っ黒にする */
-  color: #fff;      /* 文字を白にする */
+  color: var(--foreground);
+  background: var(--background);
+  font-family: sans-serif;
+  -webkit-font-smoothing: antialiased; /* 文字をきれいに見せる */
+}
+
+/* グリッドの線をきれいに出すための設定 */
+.grid-border {
+  border-color: #333;
 }
