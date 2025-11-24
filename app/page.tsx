@@ -1,14 +1,12 @@
 "use client";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { 
   ArrowUpRight, X, User, Layers, 
-  Cpu, Zap, Globe, Code 
+  Cpu, Zap, Globe, Code, Database 
 } from "lucide-react";
 
 // --- データ定義 ---
-
-// 1. アプリ一覧
 const apps = [
   { id: "01", title: "指導支援検索", desc: "SEARCH SUPPORT", href: "#" },
   { id: "02", title: "発達チャート", desc: "DEVELOPMENT CHART", href: "#" },
@@ -17,14 +15,13 @@ const apps = [
   { id: "05", title: "学習指導要領", desc: "GUIDELINES", href: "#" },
 ];
 
-// 2. 分析ツール
 const tools = [
   "Applied Behavior Analysis (ABA)", "Functional Behavior Assessment", 
   "Survey Statistical Analysis", "Multivariate Regression", 
   "T-Test & Statistical Tools", "Non-Parametric Analysis"
 ];
 
-// 3. モーダルで表示する詳細データ（プロフィール＆システム）
+// プロフィールなどの詳細
 const detailContent = {
   profile: {
     title: "ADMINISTRATOR",
@@ -64,120 +61,176 @@ const detailContent = {
 // --- メインコンポーネント ---
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // 背景パララックス用のスクロール値取得
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]); // 背景を少し遅く動かす
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black overflow-hidden relative cursor-none">
       
+      {/* 0. カスタムカーソル (マウス追従) */}
+      <CustomCursor />
+
+      {/* 0. 背景画像 (パララックス & モノクロ化) */}
+      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
+        <motion.div 
+          style={{ y }} 
+          className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale filter blur-sm"
+        />
+        {/* ノイズテクスチャを重ねて質感を出す */}
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
+
       {/* ヘッダー */}
-      <header className="flex justify-between items-center p-8 border-b border-white/20 fixed w-full top-0 bg-black/80 backdrop-blur-md z-40">
+      <header className="fixed w-full top-0 flex justify-between items-center p-8 border-b border-white/10 bg-black/50 backdrop-blur-md z-40">
         <h1 className="text-sm font-bold tracking-widest">SUPPORT HUB</h1>
         <div className="text-xs text-gray-500 font-mono">VER 2.0</div>
       </header>
 
-      {/* 1. メインビジュアル */}
-      <main className="pt-40 px-6 md:px-12 pb-20 border-b border-white/20">
-        <ScrollReveal>
-          <h2 className="text-7xl md:text-9xl font-bold leading-[0.9] tracking-tighter mb-10">
-            SPECIAL<br />
-            EDUCATION<br />
-            <span className="text-gray-600">SUPPORT.</span>
-          </h2>
-          <p className="text-gray-400 max-w-xl text-lg leading-relaxed">
-            Data-Driven Education.<br />
-            指導案作成から統計分析までを一元化したプラットフォーム。
-          </p>
-        </ScrollReveal>
-      </main>
-
-      {/* 2. アプリ一覧（グリッド） */}
-      <section className="border-b border-white/20">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* 左列 */}
-          <div className="border-b md:border-b-0 md:border-r border-white/20">
-            {apps.slice(0, 3).map((app) => (
-              <AppCard key={app.id} {...app} />
-            ))}
-          </div>
-          {/* 右列 */}
-          <div>
-            {apps.slice(3).map((app) => (
-              <AppCard key={app.id} {...app} />
-            ))}
-            
-            {/* 巨大なリンク：授業カード */}
-            <ScrollReveal delay={0.2}>
-              <a href="#" className="block h-[300px] p-10 relative group bg-neutral-900 hover:bg-white transition-colors duration-500 border-t border-white/20 overflow-hidden">
-                <div className="flex justify-between items-start relative z-10">
-                  <span className="text-xs font-mono text-gray-500 group-hover:text-black">NEW ARRIVAL</span>
-                  <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                </div>
-                <div className="absolute bottom-10 left-10 relative z-10">
-                  <h3 className="text-4xl font-bold mb-2 group-hover:text-black">授業カード<br/>ライブラリ</h3>
-                  <p className="text-gray-500 text-sm group-hover:text-black">全国の実践事例を共有・検索</p>
-                </div>
-              </a>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. プロフィール & システム (クリックでモーダル表示) */}
-      <section className="grid grid-cols-1 md:grid-cols-2 border-b border-white/20">
-        {/* プロフィール */}
-        <div 
-          onClick={() => setSelectedId('profile')}
-          className="p-16 border-b md:border-b-0 md:border-r border-white/20 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group h-[400px] flex flex-col justify-between"
-        >
-          <div className="flex justify-between">
-             <User className="text-gray-500 group-hover:text-black" size={32} />
-             <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-          </div>
-          <ScrollReveal>
-            <h3 className="text-4xl font-bold mb-2">ADMINISTRATOR</h3>
-            <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">WHO IS DEVELOPING?</p>
-          </ScrollReveal>
-        </div>
-
-        {/* システム構成 */}
-        <div 
-          onClick={() => setSelectedId('system')}
-          className="p-16 hover:bg-white hover:text-black transition-colors duration-500 cursor-pointer group h-[400px] flex flex-col justify-between"
-        >
-          <div className="flex justify-between">
-             <Cpu className="text-gray-500 group-hover:text-black" size={32} />
-             <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
-          </div>
-          <ScrollReveal delay={0.1}>
-            <h3 className="text-4xl font-bold mb-2">SYSTEM</h3>
-            <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">HOW IT WORKS?</p>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* 4. 分析ツールリスト */}
-      <section className="p-6 md:p-12">
-        <ScrollReveal>
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-            <h2 className="text-4xl font-bold">ANALYSIS TOOLS</h2>
-            <p className="text-gray-500 text-sm">研究・分析用ツール群</p>
-          </div>
-        </ScrollReveal>
+      {/* コンテンツ全体をラップ (z-indexで背景より上にする) */}
+      <div className="relative z-10">
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/20 border border-white/20">
-          {tools.map((item, i) => (
-            <ScrollReveal key={i} delay={i * 0.05}>
-              <a href="#" className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-6 flex justify-between items-center group h-32 block">
-                <span className="font-bold text-lg">{item}</span>
-                <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
+        {/* 1. メインビジュアル (オープニングインパクト) */}
+        <main className="pt-48 px-6 md:px-12 pb-32 border-b border-white/20">
+          <motion.div 
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ duration: 1 }}
+          >
+            <div className="overflow-hidden mb-2">
+              <motion.h2 
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter"
+              >
+                SPECIAL
+              </motion.h2>
+            </div>
+            <div className="overflow-hidden mb-2">
+              <motion.h2 
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter"
+              >
+                EDUCATION
+              </motion.h2>
+            </div>
+            <div className="overflow-hidden mb-10">
+              <motion.h2 
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-600"
+              >
+                SUPPORT.
+              </motion.h2>
+            </div>
 
-      <footer className="p-12 text-center text-gray-600 text-xs border-t border-white/20">
-        &copy; 2025 SPECIAL EDUCATION SUPPORT HUB.
-      </footer>
+            <motion.p 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+              className="text-gray-400 max-w-xl text-lg leading-relaxed pl-2 border-l-2 border-white/30"
+            >
+              Data-Driven Education.<br />
+              指導案作成から統計分析までを一元化したプラットフォーム。
+            </motion.p>
+          </motion.div>
+        </main>
+
+        {/* 2. アプリ一覧 */}
+        <section className="border-b border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {/* 左列 */}
+            <div className="border-b md:border-b-0 md:border-r border-white/20">
+              {apps.slice(0, 3).map((app) => (
+                <AppCard key={app.id} {...app} />
+              ))}
+            </div>
+            {/* 右列 */}
+            <div>
+              {apps.slice(3).map((app) => (
+                <AppCard key={app.id} {...app} />
+              ))}
+              
+              {/* 巨大なリンク：授業カード */}
+              <ScrollReveal>
+                <a href="#" className="block h-[300px] p-10 relative group bg-neutral-900/50 hover:bg-white transition-colors duration-500 border-t border-white/20 overflow-hidden cursor-none">
+                  <div className="flex justify-between items-start relative z-10">
+                    <span className="text-xs font-mono text-gray-500 group-hover:text-black">NEW ARRIVAL</span>
+                    <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </div>
+                  <div className="absolute bottom-10 left-10 relative z-10">
+                    <h3 className="text-4xl font-bold mb-2 group-hover:text-black">授業カード<br/>ライブラリ</h3>
+                    <p className="text-gray-500 text-sm group-hover:text-black">全国の実践事例を共有・検索</p>
+                  </div>
+                  {/* 背景装飾 */}
+                  <Database className="absolute -bottom-20 -right-20 w-80 h-80 text-white/5 group-hover:text-black/5 transition-colors duration-500" />
+                </a>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. プロフィール & システム */}
+        <section className="grid grid-cols-1 md:grid-cols-2 border-b border-white/20">
+          <div 
+            onClick={() => setSelectedId('profile')}
+            className="p-16 border-b md:border-b-0 md:border-r border-white/20 hover:bg-white hover:text-black transition-colors duration-500 cursor-none group h-[400px] flex flex-col justify-between"
+          >
+            <div className="flex justify-between">
+               <User className="text-gray-500 group-hover:text-black" size={32} />
+               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
+            </div>
+            <ScrollReveal>
+              <h3 className="text-4xl font-bold mb-2">ADMINISTRATOR</h3>
+              <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">WHO IS DEVELOPING?</p>
+            </ScrollReveal>
+          </div>
+
+          <div 
+            onClick={() => setSelectedId('system')}
+            className="p-16 hover:bg-white hover:text-black transition-colors duration-500 cursor-none group h-[400px] flex flex-col justify-between"
+          >
+            <div className="flex justify-between">
+               <Cpu className="text-gray-500 group-hover:text-black" size={32} />
+               <ArrowUpRight className="text-gray-500 group-hover:text-black opacity-0 group-hover:opacity-100 transition-all" />
+            </div>
+            <ScrollReveal>
+              <h3 className="text-4xl font-bold mb-2">SYSTEM</h3>
+              <p className="text-sm text-gray-500 group-hover:text-black/60 font-mono">HOW IT WORKS?</p>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        {/* 4. 分析ツールリスト */}
+        <section className="p-6 md:p-12">
+          <ScrollReveal>
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+              <h2 className="text-4xl font-bold">ANALYSIS TOOLS</h2>
+              <p className="text-gray-500 text-sm">研究・分析用ツール群</p>
+            </div>
+          </ScrollReveal>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/20 border border-white/20">
+            {tools.map((item, i) => (
+              <ScrollReveal key={i} delay={i * 0.05}>
+                <a href="#" className="bg-black hover:bg-white hover:text-black transition-colors duration-300 p-6 flex justify-between items-center group h-32 block cursor-none">
+                  <span className="font-bold text-lg">{item}</span>
+                  <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+
+        <footer className="p-12 text-center text-gray-600 text-xs border-t border-white/20">
+          &copy; 2025 SPECIAL EDUCATION SUPPORT HUB.
+        </footer>
+      </div>
 
       {/* --- モーダル (ポップアップ詳細) --- */}
       <AnimatePresence>
@@ -186,7 +239,7 @@ export default function Home() {
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-auto"
             onClick={() => setSelectedId(null)}
           >
             <motion.div 
@@ -195,7 +248,7 @@ export default function Home() {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="bg-neutral-900 border border-white/20 p-8 md:p-12 max-w-2xl w-full relative"
-              onClick={(e) => e.stopPropagation()} // 中身をクリックしても閉じないように
+              onClick={(e) => e.stopPropagation()}
             >
               <button 
                 onClick={() => setSelectedId(null)}
@@ -229,14 +282,64 @@ export default function Home() {
   );
 }
 
-// --- 部品: スクロールでヌルっと出るラッパー ---
+// --- 部品: カスタムカーソル ---
+function CustomCursor() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  // バネのような動きの設定
+  const springConfig = { damping: 25, stiffness: 300 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+
+  useEffect(() => {
+    const moveCursor = (e: MouseEvent) => {
+      mouseX.set(e.clientX - 16);
+      mouseY.set(e.clientY - 16);
+    };
+    window.addEventListener("mousemove", moveCursor);
+    return () => window.removeEventListener("mousemove", moveCursor);
+  }, []);
+
+  return (
+    <>
+      {/* 追従するリング */}
+      <motion.div
+        className="fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[100] mix-blend-difference hidden md:block"
+        style={{ x: springX, y: springY }}
+      />
+      {/* 中心のドット (CSSでカーソル消してるので代わり) */}
+      <div className="fixed top-0 left-0 w-2 h-2 bg-white rounded-full pointer-events-none z-[100] mix-blend-difference hidden md:block" 
+           style={{ transform: `translate(-50%, -50%)`, left: 'var(--mouse-x)', top: 'var(--mouse-y)' }} 
+           ref={(node) => {
+             if (node) {
+               document.addEventListener('mousemove', (e) => {
+                 node.style.setProperty('--mouse-x', e.clientX + 'px');
+                 node.style.setProperty('--mouse-y', e.clientY + 'px');
+               });
+             }
+           }}
+      />
+    </>
+  );
+}
+
+// --- 部品: 毎回ヌルっと動く ScrollReveal (継続アニメーション) ---
 function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }} // 下から
-      whileInView={{ opacity: 1, y: 0 }} // 元の位置へ
-      viewport={{ once: true, margin: "-10%" }} // 画面に少し入ったら発動
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: delay }} // ヌルっとした動き
+      initial="hidden"
+      whileInView="visible"
+      // viewport={{ once: false }} にすると、入るたびにアニメーションする
+      viewport={{ once: false, amount: 0.2 }} 
+      variants={{
+        hidden: { opacity: 0, y: 50 },
+        visible: { 
+          opacity: 1, 
+          y: 0,
+          transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: delay }
+        }
+      }}
     >
       {children}
     </motion.div>
@@ -247,7 +350,7 @@ function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, dela
 function AppCard({ id, title, desc, href }: { id: string, title: string, desc: string, href: string }) {
   return (
     <ScrollReveal>
-      <a href={href} className="block p-10 border-b border-white/20 hover:bg-white hover:text-black transition-colors duration-500 group min-h-[200px] flex flex-col justify-between">
+      <a href={href} className="block p-10 border-b border-white/20 hover:bg-white hover:text-black transition-colors duration-500 group min-h-[200px] flex flex-col justify-between cursor-none">
         <div className="flex justify-between w-full">
           <span className="font-mono text-xs text-gray-500 group-hover:text-black/60">{id}</span>
           <ArrowUpRight className="text-gray-500 group-hover:text-black group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -261,7 +364,7 @@ function AppCard({ id, title, desc, href }: { id: string, title: string, desc: s
   );
 }
 
-// --- 部品: 技術仕様リスト (Modal内用) ---
+// --- 部品: 技術仕様リスト ---
 function TechSpec({ icon, label, value }: { icon: any, label: string, value: string }) {
   return (
     <div className="flex items-center gap-3 p-4 bg-black/50 border border-white/10 rounded">
