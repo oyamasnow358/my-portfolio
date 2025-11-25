@@ -5,7 +5,7 @@ import {
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, Info, Video, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
-  Brain, LineChart, Sparkles, Database
+  Brain, LineChart, Sparkles, Database, Users // ★ここにUsersを追加しました
 } from "lucide-react";
 
 // ==========================================
