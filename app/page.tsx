@@ -5,7 +5,7 @@ import {
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, Info, Video, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
-  Brain, LineChart, Sparkles, Database, Users // ★ここにUsersを追加しました
+  Brain, LineChart, Sparkles, Database, Users
 } from "lucide-react";
 
 // ==========================================
@@ -78,22 +78,18 @@ export default function Home() {
     return () => { clearTimeout(timer1); clearTimeout(timer2); };
   }, []);
 
-  // ふわふわ浮くアニメーション定義
+  // ふわふわ浮くアニメーション
   const floating = {
     animate: {
       y: [0, -10, 0],
-      transition: {
-        duration: 4,
-        ease: "easeInOut",
-        repeat: Infinity,
-      },
+      transition: { duration: 4, ease: "easeInOut", repeat: Infinity },
     },
   };
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
       
-      {/* 0. オープニングアニメーション */}
+      {/* オープニングアニメーション */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -133,7 +129,7 @@ export default function Home() {
       </div>
 
       {/* 固定ヘッダー */}
-      <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none transition-all duration-500">
+      <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none">
         <div className="pointer-events-auto bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/5 hover:border-white/20 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
@@ -150,7 +146,7 @@ export default function Home() {
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 pt-60">
         
-        {/* 1. メインビジュアル (余白たっぷり・フローティング) */}
+        {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
              <motion.img 
@@ -176,7 +172,7 @@ export default function Home() {
            </motion.div>
         </section>
 
-        {/* 2. コンセプト (スペースを大きく取る) */}
+        {/* 2. コンセプト */}
         <section className="px-6 md:px-20 mb-40">
           <ScrollReveal>
             <div className="border-t border-white/10 pt-32">
@@ -185,7 +181,6 @@ export default function Home() {
                 <span className="text-blue-500">「経験」</span>や<span className="text-blue-500">「勘」</span>に、
                 データという新たな<span className="text-blue-500">「根拠」</span>をプラスします。
               </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24">
                  <FeatureItem icon={<Brain size={48} />} title="AI Assistant" desc="指導案や支援計画の作成をAIがサポート。事務作業時間を大幅に短縮し、子どもと向き合う時間を創出します。" />
                  <FeatureItem icon={<LineChart size={48} />} title="Visualization" desc="発達検査の結果や行動記録をチャートで見える化。直感的に状況を把握し、チームでの共有を円滑にします。" />
@@ -195,26 +190,26 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー (ゆったり配置・順番に出現) */}
+        {/* 3. メインメニュー (修正版：クリックが確実に反応するように構造を簡略化) */}
         <section className="px-6 md:px-20 mb-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             <StaggeredMenu>
-                <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
-                <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
-                <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
-                <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
-                <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
-             </StaggeredMenu>
+             {/* ここにあったラッパーを削除し、直接コンポーネントを配置 */}
+             <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
+             <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
+             <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
+             <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
+             <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
           </div>
         </section>
 
-        {/* 4. フッター */}
-        <footer className="bg-neutral-950 border-t border-white/5 pt-32 pb-20 px-6 md:px-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-32 max-w-6xl mx-auto">
-            <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
-            <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={() => setSelectedPage('feedback')} />
-            <FooterLink title="SYSTEM" icon={<Cpu size={16}/>} onClick={() => setSelectedPage('system')} />
-            <FooterLink title="TERMS OF USE" icon={<FileText size={16}/>} onClick={() => setSelectedPage('terms')} />
+        {/* 4. フッター (修正版：大きく目立つボタンに変更) */}
+        <footer className="bg-neutral-950 border-t border-white/10 pt-32 pb-20 px-6 md:px-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
+            {/* 4つの大きなボタン */}
+            <LargeFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} onClick={() => setSelectedPage('profile')} />
+            <LargeFooterBtn title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={32}/>} onClick={() => setSelectedPage('feedback')} />
+            <LargeFooterBtn title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} onClick={() => setSelectedPage('system')} />
+            <LargeFooterBtn title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} onClick={() => setSelectedPage('terms')} />
           </div>
           <div className="text-center text-gray-700 text-xs tracking-widest">
             &copy; 2025 Mirairo Project. All Rights Reserved.
@@ -222,7 +217,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* --- モーダル --- */}
+      {/* --- モーダル (z-indexを最強に設定) --- */}
       <AnimatePresence>
         {selectedPage && (
           <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
@@ -237,7 +232,7 @@ export default function Home() {
 // ▼ 部品コンポーネント
 // ==========================================
 
-// ヌルっと出るアニメーション (再利用可能)
+// ヌルっと出るアニメーション (MenuCard用と分離)
 function ScrollReveal({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
@@ -252,20 +247,7 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
-// メニューの順番出現用ラッパー
-function StaggeredMenu({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
-      variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-      className="contents" // Gridレイアウトを壊さないためにcontents指定
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// コンセプト機能のアイテム
+// コンセプト機能アイテム
 function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="group">
@@ -276,19 +258,17 @@ function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: st
   );
 }
 
-// メニューカード
+// メニューカード (修正版: ScrollRevealを内包し、クリックイベントを確実に)
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
-  };
-
   return (
     <motion.div
-      variants={cardVariants}
+      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
+      variants={{
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+      }}
+      onClick={onClick} // ここでクリックを受け取る
       whileHover={{ backgroundColor: "#ffffff", color: "#000000", scale: 1.02 }}
-      transition={{ duration: 0.4 }}
-      onClick={onClick}
       className={`
         bg-white/5 backdrop-blur-sm border border-white/5 p-10 md:p-14 
         cursor-pointer group relative overflow-hidden flex flex-col justify-between
@@ -307,12 +287,23 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// フッターリンク
-function FooterLink({ title, icon, onClick }: { title: string, icon: any, onClick: () => void }) {
+// 大きなフッターボタン (新デザイン)
+function LargeFooterBtn({ title, sub, icon, onClick }: { title: string, sub: string, icon: any, onClick: () => void }) {
   return (
-    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-white/5 transition-all">
-      <div className="text-gray-600 group-hover:text-blue-400 mb-3 transition-colors">{icon}</div>
-      <h4 className="text-xs font-bold text-gray-400 group-hover:text-white tracking-[0.2em] transition-colors">{title}</h4>
+    <button 
+      onClick={onClick} 
+      className="
+        flex items-center gap-6 p-8 w-full text-left 
+        bg-neutral-900 border border-white/10 rounded-xl 
+        hover:bg-white hover:text-black hover:border-white 
+        transition-all duration-300 group
+      "
+    >
+      <div className="text-gray-500 group-hover:text-blue-600 transition-colors">{icon}</div>
+      <div>
+        <h4 className="text-xl font-bold text-white group-hover:text-black tracking-widest mb-1 transition-colors">{title}</h4>
+        <p className="text-xs text-gray-500 group-hover:text-black/60 font-light">{sub}</p>
+      </div>
     </button>
   );
 }
@@ -329,7 +320,7 @@ function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick
   );
 }
 
-// モーダルコンテンツ
+// モーダルコンテンツ (z-index強化)
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   const renderContent = () => {
     switch(page) {
@@ -359,26 +350,23 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <ModalHeader title="Manual & Guide" sub="アプリの使い方・活用マニュアル" />
              <div className="grid grid-cols-1 gap-12">
                {manuals.map((manual, i) => (
-                 <ScrollReveal key={i}>
-                   <div className="p-10 bg-white/5 border border-white/5 rounded-2xl hover:bg-white hover:text-black transition-all duration-500 group">
-                     <h3 className="text-2xl font-bold mb-4 flex items-center gap-4">
-                       <BookOpen size={28} className="text-blue-500 group-hover:text-blue-600"/> {manual.title}
-                     </h3>
-                     <p className="text-gray-400 group-hover:text-black/70 mb-8 text-sm leading-loose">{manual.desc}</p>
-                     
-                     <div className="bg-black/20 group-hover:bg-gray-100 p-8 rounded-xl transition-colors">
-                       <h4 className="text-xs font-bold text-blue-400 group-hover:text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
-                       <ul className="space-y-4">
-                         {manual.steps.map((step, idx) => (
-                           <li key={idx} className="flex gap-4 text-sm text-gray-300 group-hover:text-black items-start leading-relaxed">
-                             <CheckCircle size={18} className="shrink-0 mt-0.5 text-gray-600 group-hover:text-black/30" />
-                             {step}
-                           </li>
-                         ))}
-                       </ul>
-                     </div>
+                 <div key={i} className="p-10 bg-white/5 border border-white/5 rounded-2xl hover:bg-white hover:text-black transition-all duration-500 group">
+                   <h3 className="text-2xl font-bold mb-4 flex items-center gap-4">
+                     <BookOpen size={28} className="text-blue-500 group-hover:text-blue-600"/> {manual.title}
+                   </h3>
+                   <p className="text-gray-400 group-hover:text-black/70 mb-8 text-sm leading-loose">{manual.desc}</p>
+                   <div className="bg-black/20 group-hover:bg-gray-100 p-8 rounded-xl transition-colors">
+                     <h4 className="text-xs font-bold text-blue-400 group-hover:text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
+                     <ul className="space-y-4">
+                       {manual.steps.map((step, idx) => (
+                         <li key={idx} className="flex gap-4 text-sm text-gray-300 group-hover:text-black items-start leading-relaxed">
+                           <CheckCircle size={18} className="shrink-0 mt-0.5 text-gray-600 group-hover:text-black/30" />
+                           {step}
+                         </li>
+                       ))}
+                     </ul>
                    </div>
-                 </ScrollReveal>
+                 </div>
                ))}
              </div>
           </div>
@@ -494,10 +482,10 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl overflow-y-auto"
+      className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl overflow-y-auto"
     >
       <div className="min-h-screen p-6 md:p-20 relative">
-        <button onClick={onClose} className="fixed top-6 right-6 z-[70] p-3 bg-white/10 rounded-full hover:bg-white hover:text-black transition-colors"><X size={32} /></button>
+        <button onClick={onClose} className="fixed top-6 right-6 z-[160] p-3 bg-white/10 rounded-full hover:bg-white hover:text-black transition-colors"><X size={32} /></button>
         <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }} className="max-w-5xl mx-auto pt-20 pb-20">
           {renderContent()}
         </motion.div>
