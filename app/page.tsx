@@ -87,7 +87,7 @@ export default function Home() {
                 className="text-center"
               >
                 <p className="text-sm md:text-lg text-gray-400 mb-4 tracking-widest font-light">すぐわかる。すぐ使える。</p>
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">Mirairo</h1>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">未来の色</h1>
               </motion.div>
             )}
           </motion.div>
