@@ -5,7 +5,8 @@ import {
   ArrowUpRight, X, User, Layers, 
   Cpu, Zap, Globe, Code, Database, 
   MessageSquare, Info, Video, BookOpen,
-  Users, School, Lightbulb, Activity, FileText, CheckCircle
+  Users, School, Lightbulb, Activity, FileText, CheckCircle,
+  Brain, LineChart, Sparkles // 追加アイコン
 } from "lucide-react";
 
 // ==========================================
@@ -14,56 +15,16 @@ import {
 
 const LOGO_PATH = "/mirairo.png"; 
 
-// 1. Mirairoアプリ一覧 (TOPページを追加)
+// 1. Mirairoアプリ一覧
 const mirairoApps = [
-  { 
-    id: "00", 
-    title: "TOPページ", 
-    en: "HOME", 
-    href: "https://aspecial-education-app.onrender.com/" 
-  },
-  { 
-    id: "01", 
-    title: "指導支援検索", 
-    en: "SEARCH SUPPORT", 
-    href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" 
-  },
-  { 
-    id: "02", 
-    title: "発達チャート", 
-    en: "DEVELOPMENT CHART", 
-    href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" 
-  },
-  { 
-    id: "03", 
-    title: "AI 指導案作成", 
-    en: "LESSON PLAN AI", 
-    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" 
-  },
-  { 
-    id: "04", 
-    title: "AI 支援/指導計画作成", 
-    en: "PLANNING ASSIST", 
-    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" 
-  },
-  { 
-    id: "05", 
-    title: "早引き学習指導要領", 
-    en: "GUIDELINES", 
-    href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" 
-  },
-  { 
-    id: "06", 
-    title: "授業カードライブラリ", 
-    en: "LESSON CARD LIBRARY", 
-    href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" 
-  },
-  { 
-    id: "07", 
-    title: "動画ギャラリー", 
-    en: "VIDEO GALLERY", 
-    href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" 
-  },
+  { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
+  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" },
+  { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" },
+  { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" },
+  { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" },
+  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" },
+  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" },
+  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" },
 ];
 
 // 2. 分析ツール一覧
@@ -76,7 +37,7 @@ const analysisTools = [
   { jp: "ノンパラメトリック分析", en: "Non-Parametric Analysis", href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" },
 ];
 
-// 3. マニュアルデータ (構造化)
+// 3. マニュアルデータ
 const manuals = [
   {
     title: "指導支援内容 マニュアル",
@@ -223,15 +184,11 @@ export default function Home() {
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 pt-48">
         
-        {/* 1. メインビジュアル */}
-        <section className="px-6 md:px-12 pb-20 mb-12">
+        {/* 1. メインビジュアル (タイトル) */}
+        <section className="px-6 md:px-12 pb-20">
            <motion.img 
-             initial={{ opacity: 0, x: -20 }}
-             animate={{ opacity: 1, x: 0 }}
-             transition={{ delay: 4.8, duration: 1 }}
-             src={LOGO_PATH} 
-             alt="Mirairo Logo" 
-             className="w-16 h-16 md:w-24 md:h-24 object-contain mb-8"
+             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 4.8, duration: 1 }}
+             src={LOGO_PATH} alt="Mirairo Logo" className="w-16 h-16 md:w-24 md:h-24 object-contain mb-8"
            />
            
            <div className="overflow-hidden mb-2">
@@ -245,26 +202,60 @@ export default function Home() {
            </div>
 
            <motion.div 
-             initial={{ opacity: 0, x: -20 }}
-             animate={{ opacity: 1, x: 0 }}
-             transition={{ duration: 1, delay: 5.2 }}
+             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 5.2 }}
              className="border-l-2 border-white/20 pl-6"
            >
-             <p className="text-white text-lg md:text-xl tracking-wide font-bold mb-4">
-               Data-Driven Education.
-             </p>
-             <p className="text-gray-400 mb-6">
-               指導案作成から統計分析までを一元化したプラットフォーム。
-             </p>
-             {/* ★追加されたサイト説明文 */}
-             <p className="text-sm md:text-base text-gray-500 max-w-2xl leading-loose font-light">
-               Mirairoは、特別支援教育の現場における「経験」や「勘」に、データという新たな「根拠」をプラスします。
-               先生方の専門性を最新のテクノロジーで支え、子どもたち一人ひとりの可能性を最大限に引き出すための統合プラットフォームです。
-             </p>
+             <p className="text-white text-lg md:text-xl tracking-wide font-bold mb-2">Data-Driven Education.</p>
+             <p className="text-gray-400">指導案作成から統計分析までを一元化したプラットフォーム。</p>
            </motion.div>
         </section>
 
-        {/* 2. メインメニュー */}
+        {/* 2. 新設：コンセプト＆機能紹介セクション (大きく、具体的に) */}
+        <section className="px-6 md:px-12 mb-32">
+          <ScrollReveal>
+            <div className="border-t border-white/20 pt-20">
+              <h3 className="text-2xl md:text-4xl font-bold leading-relaxed mb-12 max-w-4xl">
+                Mirairoは、特別支援教育の現場における<br className="hidden md:block"/>
+                <span className="text-blue-400">「経験」</span>や<span className="text-blue-400">「勘」</span>に、
+                データという新たな<span className="text-blue-400">「根拠」</span>をプラスします。
+              </h3>
+              <p className="text-gray-400 text-lg leading-loose max-w-3xl mb-16">
+                先生方の専門性を最新のテクノロジーで支え、<br/>
+                子どもたち一人ひとりの可能性を最大限に引き出すための統合プラットフォームです。
+              </p>
+
+              {/* 3つの具体的な機能 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                 {/* Feature 1 */}
+                 <div className="p-6 border-l border-white/20">
+                    <Brain className="text-blue-500 mb-6" size={40} />
+                    <h4 className="text-2xl font-bold mb-4">AI Assistant</h4>
+                    <p className="text-gray-400 leading-relaxed">
+                      指導案や支援計画の作成をAIがサポート。事務作業時間を大幅に短縮し、子どもと向き合う時間を創出します。
+                    </p>
+                 </div>
+                 {/* Feature 2 */}
+                 <div className="p-6 border-l border-white/20">
+                    <LineChart className="text-blue-500 mb-6" size={40} />
+                    <h4 className="text-2xl font-bold mb-4">Visualization</h4>
+                    <p className="text-gray-400 leading-relaxed">
+                      発達検査の結果や行動記録をチャートで見える化。直感的に状況を把握し、チームでの共有を円滑にします。
+                    </p>
+                 </div>
+                 {/* Feature 3 */}
+                 <div className="p-6 border-l border-white/20">
+                    <Sparkles className="text-blue-500 mb-6" size={40} />
+                    <h4 className="text-2xl font-bold mb-4">Evidence</h4>
+                    <p className="text-gray-400 leading-relaxed">
+                      専門的な統計分析ツールを内蔵。実践の成果をデータで検証し、より確かな教育実践へとつなげます。
+                    </p>
+                 </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </section>
+
+        {/* 3. メインメニュー (半透明カード) */}
         <section className="px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-32">
           <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
           <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
@@ -273,7 +264,7 @@ export default function Home() {
           <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
         </section>
 
-        {/* 3. フッター */}
+        {/* 4. フッター (黒背景) */}
         <footer className="bg-black border-t border-white/10 pt-20 pb-20 px-6 md:px-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-20 max-w-6xl mx-auto">
             <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
@@ -320,7 +311,7 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   return (
     <ScrollReveal>
       <motion.div
-        whileHover={{ backgroundColor: "#ffffff", color: "#000000" }} // ホバーで白背景・黒文字
+        whileHover={{ backgroundColor: "#ffffff", color: "#000000" }}
         transition={{ duration: 0.3 }}
         onClick={onClick}
         className={`
@@ -355,7 +346,7 @@ function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2 bg-white/90 text-black hover:bg-blue-500 hover:text-white rounded-full text-[10px] font-bold tracking-wider transition-all shadow-lg whitespace-nowrap"
+      className="flex items-center gap-2 px-4 py-2 bg-white/90 text-black hover:bg-blue-500 hover:text-white rounded-full text-[10px] font-bold tracking-wider transition-all shadow-lg whitespace-nowrap hover:scale-105"
     >
       {icon} {label}
     </button>
