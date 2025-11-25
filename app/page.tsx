@@ -5,7 +5,7 @@ import {
   ArrowUpRight, X, User, Layers, 
   Cpu, Zap, Globe, Code, Database, 
   MessageSquare, Info, Video, BookOpen,
-  Users, School, Lightbulb, Activity, FileText
+  Users, School, Lightbulb, Activity, FileText, CheckCircle
 } from "lucide-react";
 
 // ==========================================
@@ -14,15 +14,56 @@ import {
 
 const LOGO_PATH = "/mirairo.png"; 
 
-// 1. Mirairoアプリ一覧
+// 1. Mirairoアプリ一覧 (TOPページを追加)
 const mirairoApps = [
-  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" },
-  { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" },
-  { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" },
-  { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" },
-  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" },
-  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" },
-  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" },
+  { 
+    id: "00", 
+    title: "TOPページ", 
+    en: "HOME", 
+    href: "https://aspecial-education-app.onrender.com/" 
+  },
+  { 
+    id: "01", 
+    title: "指導支援検索", 
+    en: "SEARCH SUPPORT", 
+    href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" 
+  },
+  { 
+    id: "02", 
+    title: "発達チャート", 
+    en: "DEVELOPMENT CHART", 
+    href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" 
+  },
+  { 
+    id: "03", 
+    title: "AI 指導案作成", 
+    en: "LESSON PLAN AI", 
+    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" 
+  },
+  { 
+    id: "04", 
+    title: "AI 支援/指導計画作成", 
+    en: "PLANNING ASSIST", 
+    href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" 
+  },
+  { 
+    id: "05", 
+    title: "早引き学習指導要領", 
+    en: "GUIDELINES", 
+    href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" 
+  },
+  { 
+    id: "06", 
+    title: "授業カードライブラリ", 
+    en: "LESSON CARD LIBRARY", 
+    href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" 
+  },
+  { 
+    id: "07", 
+    title: "動画ギャラリー", 
+    en: "VIDEO GALLERY", 
+    href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" 
+  },
 ];
 
 // 2. 分析ツール一覧
@@ -35,7 +76,71 @@ const analysisTools = [
   { jp: "ノンパラメトリック分析", en: "Non-Parametric Analysis", href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" },
 ];
 
-// 3. つながり (Network)
+// 3. マニュアルデータ (構造化)
+const manuals = [
+  {
+    title: "指導支援内容 マニュアル",
+    desc: "お子さんの日常生活の困りごとに応じた、具体的な指導・支援のアイデアを検索することができます。",
+    steps: [
+      "3つのドロップダウンメニューを左から順番（カテゴリー→項目→詳細）に選択します。",
+      "「💡 適した指導・支援を表示」ボタンをクリックします。",
+      "表示された指導内容を確認します。タイトルをクリックすると詳細が開きます。"
+    ]
+  },
+  {
+    title: "発達チャート作成 マニュアル",
+    desc: "お子さんの現在の発達段階を記録し、レーダーチャートで視覚的に確認・保存できます。",
+    steps: [
+      "12のカテゴリーについて、現在の状況に最も近い発達段階を選択します（「▼目安を見る」で詳細確認可）。",
+      "「📊 チャートを作成して書き込む」ボタンをクリックします。",
+      "「🌐 スプレッドシートで確認」または「💾 Excel形式でダウンロード」で結果を保存します。"
+    ]
+  },
+  {
+    title: "分析方法 マニュアル",
+    desc: "特別支援教育で活用できる様々な分析方法や療法について調べることができます。",
+    steps: [
+      "【方法A】サイドバーから療法・分析法（ABAなど）を直接選択して解説を表示。",
+      "【方法B】メインエリアのメニューからお子さんの状況を選択し、有効な療法を表示。"
+    ]
+  },
+  {
+    title: "AIによる計画作成サポート マニュアル",
+    desc: "個別の支援計画や指導計画作成用のプロンプト（命令文）を簡単に作成します。",
+    steps: [
+      "プロンプトの種類（プランA・B用、評価用など）を選択します。",
+      "お子さんの実態や課題、参考情報を入力します。",
+      "「プロンプトを生成」ボタンを押し、表示された文面をコピーしてChatGPT等で使用します。"
+    ]
+  },
+  {
+    title: "AIによる指導案作成 マニュアル",
+    desc: "基本情報を入力するだけで、AIを使って学習指導案（Excel）を自動生成します。",
+    steps: [
+      "学部学年、教科単元などの基本情報を入力します。",
+      "「プロンプトを作成」し、ChatGPT等に貼り付けてJSONコードを取得します。",
+      "取得したコードをアプリに入力し、「Excel作成実行」ボタンを押してダウンロードします。"
+    ]
+  },
+  {
+    title: "知的段階（学習指導要領） マニュアル",
+    desc: "学習指導要領の中から、必要な部分を素早く探し出して閲覧することができます。",
+    steps: [
+      "学部、障害種別（段階）、教科を選択します。",
+      "「表示する」ボタンをクリックすると、該当する内容（目標・指導内容）が表示されます。"
+    ]
+  },
+  {
+    title: "授業カードライブラリー マニュアル",
+    desc: "先生方が実践している授業のアイデアをカード形式で共有・検索できる機能です。",
+    steps: [
+      "検索バーやハッシュタグを使って授業を探します。",
+      "授業カードをクリックして詳細ページを開き、指導略案PDFや動画を確認します。"
+    ]
+  },
+];
+
+// 4. つながり (Network)
 const networkData = [
   { name: "IT Teacher A", role: "High School Info Dept.", desc: "Network Specialist" },
   { name: "IT Teacher B", role: "Special Ed. Coordinator", desc: "iPad Utilization" },
@@ -87,7 +192,7 @@ export default function Home() {
                 className="text-center"
               >
                 <p className="text-sm md:text-lg text-gray-400 mb-4 tracking-widest font-light">すぐわかる。すぐ使える。</p>
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">未来の色</h1>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">Mirairo</h1>
               </motion.div>
             )}
           </motion.div>
@@ -118,9 +223,8 @@ export default function Home() {
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 pt-48">
         
-        {/* 1. メインビジュアル (ロゴ + アニメーションテキスト) */}
+        {/* 1. メインビジュアル */}
         <section className="px-6 md:px-12 pb-20 mb-12">
-           {/* OP終了後にふわっと出るロゴ */}
            <motion.img 
              initial={{ opacity: 0, x: -20 }}
              animate={{ opacity: 1, x: 0 }}
@@ -130,33 +234,14 @@ export default function Home() {
              className="w-16 h-16 md:w-24 md:h-24 object-contain mb-8"
            />
            
-           {/* 順番に出るテキスト */}
            <div className="overflow-hidden mb-2">
-             <motion.h2 
-               initial={{ y: 100 }} animate={{ y: 0 }} 
-               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 4.8 }} // OP後
-               className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter"
-             >
-               SPECIAL
-             </motion.h2>
+             <motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 4.8 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">SPECIAL</motion.h2>
            </div>
            <div className="overflow-hidden mb-2">
-             <motion.h2 
-               initial={{ y: 100 }} animate={{ y: 0 }} 
-               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 4.9 }}
-               className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter"
-             >
-               EDUCATION
-             </motion.h2>
+             <motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 4.9 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">EDUCATION</motion.h2>
            </div>
            <div className="overflow-hidden mb-10">
-             <motion.h2 
-               initial={{ y: 100 }} animate={{ y: 0 }} 
-               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 5.0 }}
-               className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-500"
-             >
-               SUPPORT.
-             </motion.h2>
+             <motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 5.0 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-500">SUPPORT.</motion.h2>
            </div>
 
            <motion.div 
@@ -165,48 +250,36 @@ export default function Home() {
              transition={{ duration: 1, delay: 5.2 }}
              className="border-l-2 border-white/20 pl-6"
            >
-             <p className="text-white text-lg md:text-xl tracking-wide font-bold mb-2">
+             <p className="text-white text-lg md:text-xl tracking-wide font-bold mb-4">
                Data-Driven Education.
              </p>
-             <p className="text-gray-400">
+             <p className="text-gray-400 mb-6">
                指導案作成から統計分析までを一元化したプラットフォーム。
+             </p>
+             {/* ★追加されたサイト説明文 */}
+             <p className="text-sm md:text-base text-gray-500 max-w-2xl leading-loose font-light">
+               Mirairoは、特別支援教育の現場における「経験」や「勘」に、データという新たな「根拠」をプラスします。
+               先生方の専門性を最新のテクノロジーで支え、子どもたち一人ひとりの可能性を最大限に引き出すための統合プラットフォームです。
              </p>
            </motion.div>
         </section>
 
-        {/* 2. メインメニュー (半透明カード・ScrollReveal) */}
+        {/* 2. メインメニュー */}
         <section className="px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-32">
-          <MenuCard 
-            title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} 
-            onClick={() => setSelectedPage('apps')} big 
-          />
-          <MenuCard 
-            title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} 
-            onClick={() => setSelectedPage('manual')} 
-          />
-          <MenuCard 
-            title="つながり" sub="NETWORK" icon={<Users />} 
-            onClick={() => setSelectedPage('network')} 
-          />
-          <MenuCard 
-            title="導入校" sub="CASE STUDY" icon={<School />} 
-            onClick={() => setSelectedPage('school')} 
-          />
-          <MenuCard 
-            title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} 
-            onClick={() => setSelectedPage('tools')} 
-          />
+          <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
+          <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
+          <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
+          <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
+          <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
         </section>
 
-        {/* 3. 新フッターエリア (黒背景) */}
+        {/* 3. フッター */}
         <footer className="bg-black border-t border-white/10 pt-20 pb-20 px-6 md:px-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-20 max-w-6xl mx-auto">
-            
             <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
             <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={() => setSelectedPage('feedback')} />
             <FooterLink title="SYSTEM" icon={<Cpu size={16}/>} onClick={() => setSelectedPage('system')} />
             <FooterLink title="TERMS OF USE" icon={<FileText size={16}/>} onClick={() => setSelectedPage('terms')} />
-            
           </div>
           <div className="text-center text-gray-600 text-xs">
             &copy; 2025 Mirairo Project. All Rights Reserved.
@@ -214,7 +287,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* --- モーダル (詳細ページ) --- */}
+      {/* --- モーダル --- */}
       <AnimatePresence>
         {selectedPage && (
           <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
@@ -226,10 +299,9 @@ export default function Home() {
 }
 
 // ==========================================
-// ▼ 部品コンポーネント (ScrollReveal含む)
+// ▼ 部品コンポーネント
 // ==========================================
 
-// スクロールに合わせてヌルっと出る
 function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) {
   return (
     <motion.div
@@ -244,12 +316,11 @@ function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode, dela
   );
 }
 
-// メニューカード (半透明)
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   return (
     <ScrollReveal>
       <motion.div
-        whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.1)" }}
+        whileHover={{ backgroundColor: "#ffffff", color: "#000000" }} // ホバーで白背景・黒文字
         transition={{ duration: 0.3 }}
         onClick={onClick}
         className={`
@@ -259,11 +330,11 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
         `}
       >
         <div className="flex justify-between items-start">
-          <div className="text-gray-500 group-hover:text-white transition-colors">{icon}</div>
-          <ArrowUpRight className="text-gray-500 group-hover:text-white transition-transform" />
+          <div className="text-gray-500 group-hover:text-black transition-colors">{icon}</div>
+          <ArrowUpRight className="text-gray-500 group-hover:text-black transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
         </div>
         <div>
-          <p className="font-mono text-xs text-gray-500 group-hover:text-white/60 mb-2 tracking-widest">{sub}</p>
+          <p className="font-mono text-xs text-gray-500 group-hover:text-black/60 mb-2 tracking-widest">{sub}</p>
           <h3 className="text-3xl md:text-4xl font-bold">{title}</h3>
         </div>
       </motion.div>
@@ -271,17 +342,15 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// フッターリンク
 function FooterLink({ title, icon, onClick }: { title: string, icon: any, onClick: () => void }) {
   return (
-    <button onClick={onClick} className="text-left group">
-      <div className="text-gray-500 group-hover:text-blue-500 mb-2 transition-colors">{icon}</div>
-      <h4 className="text-sm font-bold text-gray-300 group-hover:text-white tracking-widest transition-colors">{title}</h4>
+    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-white hover:text-black transition-all">
+      <div className="text-gray-500 group-hover:text-black mb-2 transition-colors">{icon}</div>
+      <h4 className="text-sm font-bold text-gray-300 group-hover:text-black tracking-widest transition-colors">{title}</h4>
     </button>
   );
 }
 
-// ヘッダータグ
 function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
   return (
     <button
@@ -293,7 +362,6 @@ function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick
   );
 }
 
-// モーダルコンテンツ
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   const renderContent = () => {
     switch(page) {
@@ -303,10 +371,12 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <ModalHeader title="Mirairo Apps" sub="現場の困りごとを解決するアプリケーション" />
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {mirairoApps.map((app, i) => (
-                  <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" className="block p-6 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all group rounded-lg">
+                  <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
+                     className="block p-6 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all group rounded-lg"
+                  >
                     <div className="flex justify-between mb-4">
                        <span className="font-mono text-xs text-gray-500 group-hover:text-black/60">{app.id}</span>
-                       <ArrowUpRight size={16} />
+                       <ArrowUpRight size={16} className="text-gray-500 group-hover:text-black" />
                     </div>
                     <h3 className="text-xl font-bold mb-1">{app.title}</h3>
                     <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono">{app.en}</p>
@@ -317,17 +387,39 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         );
       case 'manual':
         return (
-          <div className="text-center py-20">
-             <BookOpen size={64} className="mx-auto mb-6 text-gray-600" />
-             <h2 className="text-4xl font-bold mb-4">Manual</h2>
-             <p className="text-gray-400 mb-8">準備中です。PDF版をお待ちください。</p>
+          <div>
+             <ModalHeader title="Manual & Guide" sub="アプリの使い方・活用マニュアル" />
+             <div className="grid grid-cols-1 gap-8">
+               {manuals.map((manual, i) => (
+                 <ScrollReveal key={i} delay={i * 0.1}>
+                   <div className="p-8 bg-white/5 border border-white/10 rounded-xl hover:bg-white hover:text-black transition-colors group">
+                     <h3 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                       <BookOpen size={24} className="text-blue-500 group-hover:text-blue-600"/> {manual.title}
+                     </h3>
+                     <p className="text-gray-400 group-hover:text-black/70 mb-6 text-sm leading-relaxed">{manual.desc}</p>
+                     
+                     <div className="bg-black/20 group-hover:bg-gray-100 p-6 rounded-lg transition-colors">
+                       <h4 className="text-xs font-bold text-blue-400 group-hover:text-blue-600 mb-3 tracking-widest">HOW TO USE</h4>
+                       <ul className="space-y-3">
+                         {manual.steps.map((step, idx) => (
+                           <li key={idx} className="flex gap-3 text-sm text-gray-300 group-hover:text-black">
+                             <CheckCircle size={16} className="shrink-0 mt-0.5 text-gray-500 group-hover:text-black/50" />
+                             {step}
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
+                   </div>
+                 </ScrollReveal>
+               ))}
+             </div>
           </div>
         );
       case 'network':
         return (
           <div>
              <ModalHeader title="Network" sub="ICTを活用した教育を推進するメンバー" />
-             <div className="mb-8 p-8 bg-gradient-to-r from-blue-900/20 to-transparent border-l-4 border-blue-500">
+             <div className="mb-8 p-8 bg-gradient-to-r from-blue-900/20 to-transparent border-l-4 border-blue-500 rounded-r-lg">
                <div className="flex items-center gap-4 mb-4">
                  <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center"><User size={32} /></div>
                  <div>
@@ -340,10 +432,10 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {networkData.map((person, i) => (
-                 <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-lg">
+                 <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-lg hover:bg-white hover:text-black transition-colors group">
                      <h4 className="font-bold text-lg">{person.name}</h4>
-                     <p className="text-xs text-blue-400 mb-1">{person.role}</p>
-                     <p className="text-xs text-gray-500">{person.desc}</p>
+                     <p className="text-xs text-blue-400 group-hover:text-blue-600 mb-1">{person.role}</p>
+                     <p className="text-xs text-gray-500 group-hover:text-black/60">{person.desc}</p>
                  </div>
                ))}
              </div>
@@ -353,11 +445,11 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Introduction" sub="Mirairoアプリ導入校・研究協力校" />
-             <div className="p-8 bg-white/5 border border-white/10 rounded-xl mb-8">
-               <h3 className="text-2xl font-bold mb-2 flex items-center gap-3"><School className="text-blue-400" /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
-               <p className="text-gray-400 text-sm mb-4">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
+             <div className="p-8 bg-white/5 border border-white/10 rounded-xl mb-8 hover:bg-white hover:text-black transition-colors group">
+               <h3 className="text-2xl font-bold mb-2 flex items-center gap-3"><School className="text-blue-400 group-hover:text-blue-600" /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
+               <p className="text-gray-400 group-hover:text-black/70 text-sm mb-4">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
              </div>
-             <div className="p-8 border border-dashed border-white/20 rounded-xl text-center">
+             <div className="p-8 border border-dashed border-white/20 rounded-xl text-center hover:border-white/50 transition-colors">
                <Lightbulb className="mx-auto text-yellow-500 mb-4" size={32} />
                <h3 className="text-xl font-bold mb-2">Future Curriculum Design</h3>
                <p className="text-sm text-gray-500">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
@@ -397,7 +489,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
          return (
             <div className="py-10">
                <h2 className="text-4xl font-bold mb-6">FEEDBACK</h2>
-               <a href="https://docs.google.com/forms/d/1dKzh90OkxMoWDZXV31FgPvXG5EvNlMFOrvSPGvYTSC8/preview" target="_blank" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-full font-bold">アンケートフォーム</a>
+               <a href="https://docs.google.com/forms/d/1dKzh90OkxMoWDZXV31FgPvXG5EvNlMFOrvSPGvYTSC8/preview" target="_blank" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-full font-bold hover:bg-white hover:text-blue-600 transition-colors">アンケートフォーム</a>
             </div>
          );
        case 'terms':
@@ -406,10 +498,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                <h2 className="text-4xl font-bold mb-6">TERMS OF USE</h2>
                <p className="text-gray-300">本サイトは非営利の研究用プラットフォームです。ツールは自由にご利用いただけます。</p>
             </div>
-         );
-       case 'about':
-         return (
-            <div className="py-10"><h2 className="text-4xl font-bold mb-6">ABOUT</h2><p className="text-gray-300">Mirairo Projectについて。</p></div>
          );
       default:
         return null;
