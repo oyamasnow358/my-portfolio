@@ -12,10 +12,11 @@ import {
 // ▼ データ設定エリア
 // ==========================================
 
-// ★ロゴ画像のパス (publicフォルダに入れてください)
-const LOGO_PATH = ""C:\Users\taka\my-portfolio\public\mirairo.png""; 
+// ★ロゴ画像のパス
+// publicフォルダに入れたファイル名だけでOKです
+const LOGO_PATH = "/mirairo.png"; 
 
-// 1. Mirairoアプリ一覧 (旧トップページのアプリ)
+// 1. Mirairoアプリ一覧
 const mirairoApps = [
   { 
     id: "01", 
@@ -61,7 +62,7 @@ const mirairoApps = [
   },
 ];
 
-// 2. 分析ツール一覧 (研究論文用)
+// 2. 分析ツール一覧
 const analysisTools = [
   { 
     jp: "応用行動分析", 
@@ -108,58 +109,64 @@ const networkData = [
 // ==========================================
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [opPhase, setOpPhase] = useState(0); // 0:ロゴ, 1:文字, 2:完了
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   // オープニングアニメーション制御
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2800); // 2.8秒後にメイン画面へ
-    return () => clearTimeout(timer);
+    // 1.5秒後に文字フェーズへ
+    const timer1 = setTimeout(() => setOpPhase(1), 2000);
+    // さらに2.5秒後(計4.5秒後)にメイン画面へ
+    const timer2 = setTimeout(() => setOpPhase(2), 4500);
+    return () => { clearTimeout(timer1); clearTimeout(timer2); };
   }, []);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
       
       {/* 0. オープニングアニメーション */}
-      <AnimatePresence>
-        {isLoading && (
+      <AnimatePresence mode="wait">
+        {opPhase < 2 && (
           <motion.div
-            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center"
-            exit={{ opacity: 0, transition: { duration: 0.8 } }}
+            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center px-6"
+            exit={{ opacity: 0, transition: { duration: 1 } }}
           >
-            {/* ロゴ表示 (画像があれば表示、なければプレースホルダー) */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="mb-6"
-            >
-              {/* 画像を使う場合は下の行のコメントアウトを外し、imgタグを有効にしてください */}
-               <img src={LOGO_PATH} alt="Logo" className="w-24 h-24 md:w-32 md:h-32 object-contain mx-auto invert" />
-              {/* 画像がない場合のアイコン ↓ */}
-              {/* <Lightbulb size={64} className="text-white mx-auto" /> */}
-            </motion.div>
+            {/* フェーズ0: ロゴ表示 */}
+            {opPhase === 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+                transition={{ duration: 1 }}
+              >
+                {/* 
+                  ★注意: もしロゴが「黒い文字」の画像の場合、
+                  className="... invert" をつけると色が反転して白くなり、見やすくなります。
+                  元から白い文字やカラフルなロゴなら invert は消してください。
+                */}
+                <img src={LOGO_PATH} alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain" />
+              </motion.div>
+            )}
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-4xl md:text-6xl font-bold tracking-[0.2em] text-white"
-            >
-              Mirairo
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2, duration: 0.8 }}
-              className="text-gray-500 text-xs mt-4 tracking-widest"
-            >
-              FUTURE DESIGN FOR EDUCATION
-            </motion.p>
+            {/* フェーズ1: キャッチコピー表示 */}
+            {opPhase === 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8 }}
+                className="text-center"
+              >
+                <p className="text-sm md:text-lg text-gray-400 mb-4 tracking-widest font-light">
+                  すぐわかる。すぐ使える。
+                </p>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white">
+                  Mirairo
+                </h1>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -192,26 +199,37 @@ export default function Home() {
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 pt-48 pb-20 px-6 md:px-12">
         
-        {/* タイトルエリア */}
+        {/* メインビジュアルエリア */}
         <motion.div 
            initial={{ opacity: 0 }}
            whileInView={{ opacity: 1 }}
            transition={{ duration: 1 }}
            className="mb-20 border-l-2 border-white/20 pl-6 md:pl-10"
         >
-          <h2 className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter mb-4">
-            Mirairo
+          {/* 追加: メインビジュアル上のロゴ */}
+          <motion.img 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 4.8, duration: 1 }} // OPが終わった後にふわっと出る
+            src={LOGO_PATH} 
+            alt="Mirairo Logo" 
+            className="w-16 h-16 md:w-24 md:h-24 object-contain mb-8"
+          />
+
+          <h2 className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter mb-6">
+            SPECIAL<br/>
+            EDUCATION<br/>
+            SUPPORT.
           </h2>
-          <p className="text-gray-400 text-lg md:text-xl tracking-wide max-w-xl">
-            Special Education Support Hub.<br/>
-            未来の色を描く、教育支援プラットフォーム。
+          <p className="text-gray-400 text-lg md:text-xl tracking-wide max-w-xl leading-relaxed">
+            Data-Driven Education.<br/>
+            指導案作成から統計分析までを一元化したプラットフォーム。
           </p>
         </motion.div>
 
         {/* --- メインメニュー (5つのカード) --- */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/20 border border-white/20">
           
-          {/* 1. Mirairoアプリ */}
           <MenuCard 
             title="Mirairo アプリ" 
             sub="APPLICATIONS" 
@@ -219,32 +237,24 @@ export default function Home() {
             onClick={() => setSelectedPage('apps')}
             big
           />
-
-          {/* 2. アプリマニュアル */}
           <MenuCard 
             title="アプリマニュアル" 
             sub="MANUAL & GUIDE" 
             icon={<BookOpen />} 
             onClick={() => setSelectedPage('manual')}
           />
-
-          {/* 3. つながり */}
           <MenuCard 
             title="つながり" 
             sub="NETWORK" 
             icon={<Users />} 
             onClick={() => setSelectedPage('network')}
           />
-
-          {/* 4. 導入校 */}
           <MenuCard 
             title="導入校" 
             sub="CASE STUDY" 
             icon={<School />} 
             onClick={() => setSelectedPage('school')}
           />
-
-          {/* 5. 分析ツール (研究者向け) */}
           <MenuCard 
             title="分析ツール" 
             sub="FOR RESEARCHERS" 
@@ -274,7 +284,6 @@ export default function Home() {
 // ▼ サブコンポーネント群
 // ==========================================
 
-// --- メニューカード ---
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   return (
     <motion.div
@@ -300,7 +309,6 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// --- ヘッダータグ ---
 function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
   return (
     <button
@@ -312,14 +320,9 @@ function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick
   );
 }
 
-// --- ページコンテンツ (各詳細画面) ---
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
-  
-  // コンテンツの中身を分岐
   const renderContent = () => {
     switch(page) {
-      
-      // 1. Mirairoアプリ一覧
       case 'apps':
         return (
           <div>
@@ -329,7 +332,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {mirairoApps.map((app, i) => (
-                  <a key={i} href={app.href} target="_blank" rel="noopener" className="block p-6 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all group rounded-lg">
+                  <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" className="block p-6 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all group rounded-lg">
                     <div className="flex justify-between mb-4">
                        <span className="font-mono text-xs text-gray-500 group-hover:text-black/60">{app.id}</span>
                        <ArrowUpRight size={16} />
@@ -341,8 +344,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 2. マニュアル
       case 'manual':
         return (
           <div className="text-center py-20">
@@ -354,8 +355,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 3. つながり (Network)
       case 'network':
         return (
           <div>
@@ -363,8 +362,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                 <h2 className="text-5xl font-bold mb-4">Network</h2>
                 <p className="text-gray-400">ICTを活用した教育を推進するメンバー。</p>
              </div>
-             
-             {/* 管理者 (あなた) */}
              <div className="mb-8 p-8 bg-gradient-to-r from-blue-900/20 to-transparent border-l-4 border-blue-500">
                <div className="flex items-center gap-4 mb-4">
                  <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center">
@@ -380,8 +377,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                  特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。
                </p>
              </div>
-
-             {/* つながりのある教員たち */}
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {networkData.map((person, i) => (
                  <div key={i} className="p-6 bg-white/5 border border-white/10 rounded-lg flex items-start gap-4">
@@ -398,8 +393,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 4. 導入校 (岩槻はるかぜ)
       case 'school':
         return (
           <div>
@@ -407,7 +400,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                 <h2 className="text-5xl font-bold mb-4">Introduction</h2>
                 <p className="text-gray-400">Mirairoアプリ導入校・研究協力校。</p>
              </div>
-             
              <div className="p-8 bg-white/5 border border-white/10 rounded-xl mb-8">
                <h3 className="text-2xl font-bold mb-2 flex items-center gap-3">
                  <School className="text-blue-400" />
@@ -422,7 +414,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                  <span className="px-2 py-1 bg-white/10 text-[10px] rounded">高等部</span>
                </div>
              </div>
-
              <div className="p-8 border border-dashed border-white/20 rounded-xl text-center">
                <Lightbulb className="mx-auto text-yellow-500 mb-4" size={32} />
                <h3 className="text-xl font-bold mb-2">Future Curriculum Design</h3>
@@ -433,8 +424,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 5. 分析ツール (研究者向け)
       case 'tools':
         return (
           <div>
@@ -444,7 +433,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/20 border border-white/20">
                 {analysisTools.map((tool, i) => (
-                  <a key={i} href={tool.href} target="_blank" rel="noopener" className="bg-black p-8 hover:bg-white hover:text-black transition-colors group block">
+                  <a key={i} href={tool.href} target="_blank" rel="noopener noreferrer" className="bg-black p-8 hover:bg-white hover:text-black transition-colors group block">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-bold text-lg">{tool.jp}</span>
                       <ArrowUpRight className="opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -455,8 +444,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 固定タグの内容 (PROFILE, SYSTEM, FEEDBACK, ABOUT)
       case 'profile':
         return (
           <div className="py-10">
@@ -474,7 +461,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </p>
           </div>
         );
-        
        case 'system':
          return (
             <div className="py-10">
@@ -487,7 +473,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                </div>
             </div>
          );
-
        case 'feedback':
          return (
             <div className="py-10">
@@ -495,14 +480,13 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                <p className="mb-6 text-gray-300">ご意見・ご要望はこちらから。</p>
                <a 
                  href="https://docs.google.com/forms/d/1dKzh90OkxMoWDZXV31FgPvXG5EvNlMFOrvSPGvYTSC8/preview" 
-                 target="_blank" rel="noopener"
+                 target="_blank" rel="noopener noreferrer"
                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-full font-bold hover:bg-blue-500"
                >
                  <MessageSquare size={18} /> アンケートフォーム
                </a>
             </div>
          );
-       
        case 'about':
          return (
             <div className="py-10">
@@ -513,7 +497,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                </p>
             </div>
          );
-
       default:
         return null;
     }
