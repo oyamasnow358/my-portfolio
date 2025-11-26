@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #0f172a; /* 濃いグレー/黒 */
 }
 
 body {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #0f172a;
   margin: 0;
   padding: 0;
 }
