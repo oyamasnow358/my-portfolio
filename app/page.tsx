@@ -87,10 +87,9 @@ export default function Home() {
   };
 
   return (
-    // ★ 変更点: bg-black text-white を bg-white text-slate-900 に変更
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-black selection:text-white overflow-hidden relative">
       
-      {/* オープニングアニメーション (ここは黒背景のまま維持) */}
+      {/* オープニングアニメーション (ここは黒背景のまま) */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -123,13 +122,13 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 背景パララックス (白背景に合わせて調整) */}
+      {/* 背景パララックス (白背景用に調整) */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
         <div className="absolute inset-0 bg-white/20" />
       </div>
 
-      {/* 固定ヘッダー (白背景用に調整) */}
+      {/* 固定ヘッダー */}
       <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none">
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
@@ -150,7 +149,6 @@ export default function Home() {
         {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
-             {/* ★ ロゴが白ベースの場合は見えなくなるため、必要に応じて invert クラスなどで調整してください */}
              <motion.img 
                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 5, duration: 1.5 }}
                src={LOGO_PATH} alt="Mirairo Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
@@ -168,7 +166,8 @@ export default function Home() {
              className="border-l-2 border-black/10 pl-8 ml-2 max-w-2xl"
            >
              <p className="text-slate-900 text-xl md:text-2xl tracking-wide font-light mb-6">Data-Driven Education.</p>
-             <p className="text-gray-500 font-light text-sm md:text-base leading-loose">
+             {/* ▼ 変更点：文字色を text-gray-500 から text-gray-700 に変更し、font-light を削除 */}
+             <p className="text-gray-700 text-sm md:text-base leading-loose">
                指導案作成から統計分析までを一元化したプラットフォーム。
              </p>
            </motion.div>
@@ -192,7 +191,7 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー (白背景用デザインに変更) */}
+        {/* 3. メインメニュー */}
         <section className="px-6 md:px-20 mb-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
@@ -203,7 +202,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. フッター (白系または薄いグレーに変更) */}
+        {/* 4. フッター */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
             <LargeFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} onClick={() => setSelectedPage('profile')} />
@@ -211,13 +210,13 @@ export default function Home() {
             <LargeFooterBtn title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} onClick={() => setSelectedPage('system')} />
             <LargeFooterBtn title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} onClick={() => setSelectedPage('terms')} />
           </div>
-          <div className="text-center text-gray-400 text-xs tracking-widest">
+          <div className="text-center text-gray-500 text-xs tracking-widest">
             &copy; 2025 Mirairo Project. All Rights Reserved.
           </div>
         </footer>
       </div>
 
-      {/* --- モーダル (白背景デザインに変更) --- */}
+      {/* --- モーダル --- */}
       <AnimatePresence>
         {selectedPage && (
           <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
@@ -229,7 +228,7 @@ export default function Home() {
 }
 
 // ==========================================
-// ▼ 部品コンポーネント (カラー反転対応)
+// ▼ 部品コンポーネント
 // ==========================================
 
 function ScrollReveal({ children }: { children: React.ReactNode }) {
@@ -246,18 +245,18 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
-// アイコン色やテキスト色を濃い色に調整
+// ▼ 変更点：説明文(desc)の色を text-gray-500 から text-gray-700 に変更、font-light削除
 function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="group">
       <div className="text-blue-600 mb-8 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">{icon}</div>
       <h4 className="text-2xl font-bold mb-6 tracking-wide text-black">{title}</h4>
-      <p className="text-gray-500 leading-loose font-light">{desc}</p>
+      <p className="text-gray-700 leading-loose">{desc}</p>
     </div>
   );
 }
 
-// メニューカード (通常は薄いグレー、ホバーで黒背景・白文字に反転)
+// メニューカード
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   return (
     <motion.div
@@ -267,7 +266,6 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
       }}
       onClick={onClick}
-      // ホバー時に黒背景(bg-black)・白文字(text-white)になるように変更
       whileHover={{ backgroundColor: "#000000", color: "#ffffff", scale: 1.02 }}
       className={`
         bg-gray-100/50 backdrop-blur-sm border border-gray-200 p-10 md:p-14 
@@ -281,15 +279,15 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
         <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        <p className="font-mono text-xs text-gray-500 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
-        {/* タイトルは初期状態黒、ホバーで白(親のwhileHoverでcolor変化) */}
+        {/* ▼ 変更点：サブタイトルを text-gray-500 から text-gray-600 に */}
+        <p className="font-mono text-xs text-gray-600 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
         <h3 className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-white">{title}</h3>
       </div>
     </motion.div>
   );
 }
 
-// フッターボタン (白背景に合うデザイン)
+// フッターボタン
 function LargeFooterBtn({ title, sub, icon, onClick }: { title: string, sub: string, icon: any, onClick: () => void }) {
   return (
     <button 
@@ -304,13 +302,14 @@ function LargeFooterBtn({ title, sub, icon, onClick }: { title: string, sub: str
       <div className="text-gray-400 group-hover:text-blue-400 transition-colors">{icon}</div>
       <div>
         <h4 className="text-xl font-bold text-slate-900 group-hover:text-white tracking-widest mb-1 transition-colors">{title}</h4>
-        <p className="text-xs text-gray-500 group-hover:text-gray-400 font-light">{sub}</p>
+        {/* ▼ 変更点：サブテキストを text-gray-500 から text-gray-600 に */}
+        <p className="text-xs text-gray-600 group-hover:text-gray-400 font-light">{sub}</p>
       </div>
     </button>
   );
 }
 
-// ヘッダータグ (白背景用)
+// ヘッダータグ
 function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
   return (
     <button
@@ -322,7 +321,7 @@ function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick
   );
 }
 
-// モーダルコンテンツ (白背景・黒文字)
+// モーダルコンテンツ
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   const renderContent = () => {
     switch(page) {
@@ -340,7 +339,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                        <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                     </div>
                     <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
-                    <p className="text-xs text-gray-500 group-hover:text-gray-400 font-mono tracking-wide">{app.en}</p>
+                    <p className="text-xs text-gray-600 group-hover:text-gray-400 font-mono tracking-wide">{app.en}</p>
                   </a>
                 ))}
              </div>
@@ -356,12 +355,13 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                    <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
                      <BookOpen size={28} className="text-blue-600"/> {manual.title}
                    </h3>
-                   <p className="text-gray-600 mb-8 text-sm leading-loose">{manual.desc}</p>
+                   {/* ▼ 変更点：説明文を text-gray-700 に */}
+                   <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
                    <div className="bg-white p-8 rounded-xl border border-gray-100">
                      <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
                      <ul className="space-y-4">
                        {manual.steps.map((step, idx) => (
-                         <li key={idx} className="flex gap-4 text-sm text-gray-700 items-start leading-relaxed">
+                         <li key={idx} className="flex gap-4 text-sm text-gray-800 items-start leading-relaxed">
                            <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
                            {step}
                          </li>
@@ -383,17 +383,17 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                  <div>
                    <span className="text-blue-600 text-xs font-bold tracking-[0.2em] mb-2 block">ADMINISTRATOR</span>
                    <h3 className="text-3xl font-bold text-slate-900">KOYAMA</h3>
-                   <p className="text-sm text-gray-500 mt-1">Special Education Teacher</p>
+                   <p className="text-sm text-gray-600 mt-1">Special Education Teacher</p>
                  </div>
                </div>
-               <p className="text-slate-700 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
+               <p className="text-slate-800 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {networkData.map((person, i) => (
                  <div key={i} className="p-8 bg-white border border-gray-200 rounded-xl hover:border-black transition-colors duration-500 group">
                      <h4 className="font-bold text-xl mb-2 text-slate-900">{person.name}</h4>
                      <p className="text-xs text-blue-600 mb-2 tracking-wide">{person.role}</p>
-                     <p className="text-xs text-gray-500">{person.desc}</p>
+                     <p className="text-xs text-gray-700">{person.desc}</p>
                  </div>
                ))}
              </div>
@@ -405,12 +405,12 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <ModalHeader title="Introduction" sub="Mirairoアプリ導入校・研究協力校" />
              <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl mb-10 hover:bg-white hover:shadow-lg transition-colors duration-500 group">
                <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900"><School className="text-blue-600" size={32} /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
-               <p className="text-gray-600 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
+               <p className="text-gray-700 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
              </div>
              <div className="p-12 border border-dashed border-gray-300 rounded-2xl text-center hover:border-gray-500 transition-colors">
                <Lightbulb className="mx-auto text-yellow-500 mb-6" size={40} />
                <h3 className="text-2xl font-bold mb-4 text-slate-900">Future Curriculum Design</h3>
-               <p className="text-sm text-gray-500">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
+               <p className="text-sm text-gray-600">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
              </div>
           </div>
         );
@@ -434,7 +434,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-600"><User size={48} className="text-blue-600" /></div>
              <h2 className="text-5xl font-bold mb-4 text-slate-900">KOYAMA</h2>
              <p className="text-blue-600 text-sm tracking-[0.2em] mb-12">ADMINISTRATOR</p>
-             <p className="text-gray-600 leading-loose max-w-xl mx-auto">
+             <p className="text-gray-700 leading-loose max-w-xl mx-auto">
                 埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
                 プログラミング（Python, React）を活用し、特別支援教育の課題解決に取り組んでいます。
              </p>
@@ -446,7 +446,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                <h2 className="text-4xl font-bold mb-12 text-slate-900">SYSTEM ARCHITECTURE</h2>
                <div className="flex flex-wrap justify-center gap-6">
                  {['Next.js 14', 'Tailwind CSS', 'Framer Motion', 'Vercel', 'Render'].map(tag => (
-                   <span key={tag} className="px-6 py-3 border border-gray-300 rounded-full text-sm font-mono text-gray-600">{tag}</span>
+                   <span key={tag} className="px-6 py-3 border border-gray-300 rounded-full text-sm font-mono text-gray-700">{tag}</span>
                  ))}
                </div>
             </div>
@@ -455,7 +455,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
          return (
             <div className="py-20 text-center">
                <h2 className="text-4xl font-bold mb-8 text-slate-900">FEEDBACK</h2>
-               <p className="text-gray-600 mb-12">ご意見・ご要望・バグ報告は以下のフォームよりお願いいたします。</p>
+               <p className="text-gray-700 mb-12">ご意見・ご要望・バグ報告は以下のフォームよりお願いいたします。</p>
                <a href="https://docs.google.com/forms/d/1dKzh90OkxMoWDZXV31FgPvXG5EvNlMFOrvSPGvYTSC8/preview" target="_blank" className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-full font-bold hover:bg-black transition-colors shadow-lg hover:shadow-xl">
                  アンケートフォームを開く <ArrowUpRight size={18} />
                </a>
@@ -465,7 +465,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
          return (
             <div className="py-20 text-center">
                <h2 className="text-4xl font-bold mb-8 text-slate-900">TERMS OF USE</h2>
-               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-600 text-sm leading-loose">
+               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-700 text-sm leading-loose">
                  <p>本サイトは、特別支援教育の発展を目的とした非営利の研究用プラットフォームです。</p>
                  <ul className="list-disc pl-5 space-y-4">
                    <li>本サイト上のツールは、どなたでも自由にご利用いただけます。</li>
@@ -484,7 +484,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      // モーダル背景も白ベースに変更 (bg-white/95)
       className="fixed inset-0 z-[150] bg-white/95 backdrop-blur-xl overflow-y-auto"
     >
       <div className="min-h-screen p-6 md:p-20 relative">
