@@ -12,7 +12,9 @@ import {
 // ▼ データ設定エリア
 // ==========================================
 
-const LOGO_PATH = "/mirairo.png"; 
+// ★ 変更点: ロゴのパスをOP用とメイン用に分割
+const LOGO_OP_PATH = "/mirairo.png";    // 黒背景用（オープニング）
+const LOGO_MAIN_PATH = "/mirairo2.png"; // 白背景用（メイン画面）
 
 // 1. Mirairoアプリ一覧
 const mirairoApps = [
@@ -103,7 +105,8 @@ export default function Home() {
                 exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
                 transition={{ duration: 1.5 }}
               >
-                <img src={LOGO_PATH} alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain" />
+                {/* ★ 変更点: オープニング用ロゴ (LOGO_OP_PATH) を使用 */}
+                <img src={LOGO_OP_PATH} alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain" />
               </motion.div>
             )}
             {opPhase === 1 && (
@@ -149,9 +152,10 @@ export default function Home() {
         {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
+             {/* ★ 変更点: メイン用ロゴ (LOGO_MAIN_PATH) を使用 */}
              <motion.img 
                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 5, duration: 1.5 }}
-               src={LOGO_PATH} alt="Mirairo Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
+               src={LOGO_MAIN_PATH} alt="Mirairo Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
              />
            </motion.div>
            
@@ -166,7 +170,6 @@ export default function Home() {
              className="border-l-2 border-black/10 pl-8 ml-2 max-w-2xl"
            >
              <p className="text-slate-900 text-xl md:text-2xl tracking-wide font-light mb-6">Data-Driven Education.</p>
-             {/* ▼ 変更点：文字色を text-gray-500 から text-gray-700 に変更し、font-light を削除 */}
              <p className="text-gray-700 text-sm md:text-base leading-loose">
                指導案作成から統計分析までを一元化したプラットフォーム。
              </p>
@@ -245,7 +248,6 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ▼ 変更点：説明文(desc)の色を text-gray-500 から text-gray-700 に変更、font-light削除
 function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="group">
@@ -279,7 +281,6 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
         <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        {/* ▼ 変更点：サブタイトルを text-gray-500 から text-gray-600 に */}
         <p className="font-mono text-xs text-gray-600 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
         <h3 className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-white">{title}</h3>
       </div>
@@ -302,7 +303,6 @@ function LargeFooterBtn({ title, sub, icon, onClick }: { title: string, sub: str
       <div className="text-gray-400 group-hover:text-blue-400 transition-colors">{icon}</div>
       <div>
         <h4 className="text-xl font-bold text-slate-900 group-hover:text-white tracking-widest mb-1 transition-colors">{title}</h4>
-        {/* ▼ 変更点：サブテキストを text-gray-500 から text-gray-600 に */}
         <p className="text-xs text-gray-600 group-hover:text-gray-400 font-light">{sub}</p>
       </div>
     </button>
@@ -355,7 +355,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                    <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
                      <BookOpen size={28} className="text-blue-600"/> {manual.title}
                    </h3>
-                   {/* ▼ 変更点：説明文を text-gray-700 に */}
                    <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
                    <div className="bg-white p-8 rounded-xl border border-gray-100">
                      <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
