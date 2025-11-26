@@ -12,7 +12,6 @@ import {
 // ▼ データ設定エリア
 // ==========================================
 
-// ★ 変更点: ロゴのパスをOP用とメイン用に分割
 const LOGO_OP_PATH = "/mirairo.png";    // 黒背景用（オープニング）
 const LOGO_MAIN_PATH = "/mirairo2.png"; // 白背景用（メイン画面）
 
@@ -91,7 +90,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-black selection:text-white overflow-hidden relative">
       
-      {/* オープニングアニメーション (ここは黒背景のまま) */}
+      {/* オープニングアニメーション */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -105,7 +104,6 @@ export default function Home() {
                 exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
                 transition={{ duration: 1.5 }}
               >
-                {/* ★ 変更点: オープニング用ロゴ (LOGO_OP_PATH) を使用 */}
                 <img src={LOGO_OP_PATH} alt="Logo" className="w-32 h-32 md:w-48 md:h-48 object-contain" />
               </motion.div>
             )}
@@ -125,13 +123,13 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 背景パララックス (白背景用に調整) */}
+      {/* 背景パララックス */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
         <div className="absolute inset-0 bg-white/20" />
       </div>
 
-      {/* 固定ヘッダー */}
+      {/* 固定ヘッダー（タグを色分けして視認性を向上） */}
       <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none">
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
@@ -140,9 +138,10 @@ export default function Home() {
           </h1>
         </div>
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
-          <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} />
-          <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} />
-          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} />
+          {/* ▼ 変更点: colorプロパティを追加して色分け */}
+          <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} color="blue" />
+          <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} color="purple" />
+          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} color="emerald" />
         </nav>
       </header>
 
@@ -152,7 +151,6 @@ export default function Home() {
         {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
-             {/* ★ 変更点: メイン用ロゴ (LOGO_MAIN_PATH) を使用 */}
              <motion.img 
                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 5, duration: 1.5 }}
                src={LOGO_MAIN_PATH} alt="Mirairo Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
@@ -205,13 +203,26 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. フッター */}
+        {/* 4. フッター (ボタンに色とアニメーションを追加) */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
-            <LargeFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} onClick={() => setSelectedPage('profile')} />
-            <LargeFooterBtn title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={32}/>} onClick={() => setSelectedPage('feedback')} />
-            <LargeFooterBtn title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} onClick={() => setSelectedPage('system')} />
-            <LargeFooterBtn title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} onClick={() => setSelectedPage('terms')} />
+            {/* ▼ 変更点: colorとdelayを指定して色分け＆ぬるっと表示 */}
+            <LargeFooterBtn 
+              title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} 
+              onClick={() => setSelectedPage('profile')} color="blue" delay={0.1}
+            />
+            <LargeFooterBtn 
+              title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={32}/>} 
+              onClick={() => setSelectedPage('feedback')} color="emerald" delay={0.2}
+            />
+            <LargeFooterBtn 
+              title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} 
+              onClick={() => setSelectedPage('system')} color="purple" delay={0.3}
+            />
+            <LargeFooterBtn 
+              title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} 
+              onClick={() => setSelectedPage('terms')} color="slate" delay={0.4}
+            />
           </div>
           <div className="text-center text-gray-500 text-xs tracking-widest">
             &copy; 2025 Mirairo Project. All Rights Reserved.
@@ -288,33 +299,67 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// フッターボタン
-function LargeFooterBtn({ title, sub, icon, onClick }: { title: string, sub: string, icon: any, onClick: () => void }) {
+// ▼ 変更点: motion.buttonに変更し、色(color)と遅延(delay)を受け取ってスタイル・アニメーションに反映
+function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title: string, sub: string, icon: any, onClick: () => void, color: "blue" | "emerald" | "purple" | "slate", delay?: number }) {
+  
+  // 色定義マップ
+  const styles = {
+    blue: "bg-blue-50/80 border-blue-200 hover:border-blue-400 text-blue-900",
+    emerald: "bg-emerald-50/80 border-emerald-200 hover:border-emerald-400 text-emerald-900",
+    purple: "bg-purple-50/80 border-purple-200 hover:border-purple-400 text-purple-900",
+    slate: "bg-slate-100/80 border-slate-200 hover:border-slate-400 text-slate-900",
+  };
+
+  const iconColors = {
+    blue: "text-blue-400 group-hover:text-blue-600",
+    emerald: "text-emerald-400 group-hover:text-emerald-600",
+    purple: "text-purple-400 group-hover:text-purple-600",
+    slate: "text-slate-400 group-hover:text-slate-600",
+  };
+
   return (
-    <button 
-      onClick={onClick} 
-      className="
+    <motion.button 
+      onClick={onClick}
+      // ぬるっと出るアニメーション
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: delay, ease: "easeOut" }}
+      // ホバー時のぬるっと動くアニメーション
+      whileHover={{ scale: 1.02, backgroundColor: "#ffffff" }}
+      whileTap={{ scale: 0.98 }}
+      className={`
         flex items-center gap-6 p-8 w-full text-left 
-        bg-white border border-gray-200 rounded-xl 
-        hover:bg-black hover:text-white hover:border-black 
-        transition-all duration-300 group shadow-sm
-      "
+        border rounded-xl transition-all duration-300 group shadow-sm hover:shadow-xl
+        ${styles[color]} 
+      `}
     >
-      <div className="text-gray-400 group-hover:text-blue-400 transition-colors">{icon}</div>
+      <div className={`transition-colors duration-300 ${iconColors[color]}`}>{icon}</div>
       <div>
-        <h4 className="text-xl font-bold text-slate-900 group-hover:text-white tracking-widest mb-1 transition-colors">{title}</h4>
-        <p className="text-xs text-gray-600 group-hover:text-gray-400 font-light">{sub}</p>
+        <h4 className="text-xl font-bold tracking-widest mb-1 transition-colors">{title}</h4>
+        <p className="text-xs opacity-70 group-hover:opacity-100 transition-opacity font-light">{sub}</p>
       </div>
-    </button>
+    </motion.button>
   );
 }
 
-// ヘッダータグ
-function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
+// ▼ 変更点: colorを受け取り、それに応じたスタイルを適用
+function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
+  
+  const styles = {
+    blue: "bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100 hover:border-blue-400",
+    purple: "bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100 hover:border-purple-400",
+    emerald: "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400",
+  };
+
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 px-5 py-2.5 bg-white/50 text-slate-900 hover:bg-black hover:text-white rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 backdrop-blur-md border border-gray-200 hover:border-black"
+      className={`
+        flex items-center gap-3 px-5 py-2.5 rounded-full text-[10px] font-bold tracking-widest 
+        transition-all duration-300 backdrop-blur-md border shadow-sm
+        ${styles[color]}
+      `}
     >
       {icon} {label}
     </button>
