@@ -129,7 +129,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-white/20" />
       </div>
 
-      {/* 固定ヘッダー（タグを色分けして視認性を向上） */}
+      {/* 固定ヘッダー */}
       <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none">
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
@@ -138,7 +138,7 @@ export default function Home() {
           </h1>
         </div>
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
-          {/* ▼ 変更点: colorプロパティを追加して色分け */}
+          {/* ▼ 変更点: color指定を追加。この後定義するHeaderTagコンポーネントで色を受け取る */}
           <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} color="blue" />
           <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} color="purple" />
           <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} color="emerald" />
@@ -203,10 +203,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. フッター (ボタンに色とアニメーションを追加) */}
+        {/* 4. フッター (ボタンに色と「ぬるっと」アニメーション追加) */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
-            {/* ▼ 変更点: colorとdelayを指定して色分け＆ぬるっと表示 */}
+            {/* ▼ 変更点: delay（遅延）を設定して、順番にぬるっと出てくるように */}
             <LargeFooterBtn 
               title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} 
               onClick={() => setSelectedPage('profile')} color="blue" delay={0.1}
@@ -299,38 +299,40 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// ▼ 変更点: motion.buttonに変更し、色(color)と遅延(delay)を受け取ってスタイル・アニメーションに反映
+// ▼ 変更点: 色定義マップとアニメーション(motion.button)を追加
+// 箱そのものに色をつけ、ぬるっと出現させる
 function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title: string, sub: string, icon: any, onClick: () => void, color: "blue" | "emerald" | "purple" | "slate", delay?: number }) {
   
-  // 色定義マップ
+  // 色の定義（前よりも濃くして分かりやすくしました）
+  // blue-100などは白背景でもはっきり見えます
   const styles = {
-    blue: "bg-blue-50/80 border-blue-200 hover:border-blue-400 text-blue-900",
-    emerald: "bg-emerald-50/80 border-emerald-200 hover:border-emerald-400 text-emerald-900",
-    purple: "bg-purple-50/80 border-purple-200 hover:border-purple-400 text-purple-900",
-    slate: "bg-slate-100/80 border-slate-200 hover:border-slate-400 text-slate-900",
+    blue: "bg-blue-100 border-blue-300 hover:border-blue-500 text-blue-900",
+    emerald: "bg-emerald-100 border-emerald-300 hover:border-emerald-500 text-emerald-900",
+    purple: "bg-purple-100 border-purple-300 hover:border-purple-500 text-purple-900",
+    slate: "bg-slate-200 border-slate-300 hover:border-slate-500 text-slate-900",
   };
 
   const iconColors = {
-    blue: "text-blue-400 group-hover:text-blue-600",
-    emerald: "text-emerald-400 group-hover:text-emerald-600",
-    purple: "text-purple-400 group-hover:text-purple-600",
-    slate: "text-slate-400 group-hover:text-slate-600",
+    blue: "text-blue-500 group-hover:text-blue-700",
+    emerald: "text-emerald-500 group-hover:text-emerald-700",
+    purple: "text-purple-500 group-hover:text-purple-700",
+    slate: "text-slate-500 group-hover:text-slate-700",
   };
 
   return (
     <motion.button 
       onClick={onClick}
-      // ぬるっと出るアニメーション
-      initial={{ opacity: 0, y: 30 }}
+      // 出現アニメーション：y:50から0へ、0.8秒かけてゆっくりと「ぬるっと」出す
+      initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: delay, ease: "easeOut" }}
-      // ホバー時のぬるっと動くアニメーション
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.8, delay: delay, ease: [0.22, 1, 0.36, 1] }} // ぬるっとしたイージング
+      // ホバー時
       whileHover={{ scale: 1.02, backgroundColor: "#ffffff" }}
       whileTap={{ scale: 0.98 }}
       className={`
         flex items-center gap-6 p-8 w-full text-left 
-        border rounded-xl transition-all duration-300 group shadow-sm hover:shadow-xl
+        border rounded-xl transition-all duration-300 group shadow-sm hover:shadow-2xl
         ${styles[color]} 
       `}
     >
@@ -343,13 +345,13 @@ function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title
   );
 }
 
-// ▼ 変更点: colorを受け取り、それに応じたスタイルを適用
+// ▼ 変更点: タグの色分け実装。こちらも背景色を濃いめ(bg-*-100)に設定
 function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
   
   const styles = {
-    blue: "bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100 hover:border-blue-400",
-    purple: "bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100 hover:border-purple-400",
-    emerald: "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400",
+    blue: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200 hover:border-blue-500",
+    purple: "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200 hover:border-purple-500",
+    emerald: "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200 hover:border-emerald-500",
   };
 
   return (
