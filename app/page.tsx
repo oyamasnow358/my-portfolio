@@ -12,11 +12,11 @@ import {
 // ▼ データ設定エリア
 // ==========================================
 
-const LOGO_OP_PATH = "/mirairo.png";    // 黒背景用（オープニング）
-const LOGO_MAIN_PATH = "/mirairo2.png"; // 白背景用（メイン画面）
+const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用（オープニング）
+const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用（メイン画面）
 
-// 1. Mirairoアプリ一覧
-const mirairoApps = [
+// 1. MieeLアプリ一覧
+const MieeLApps = [
   { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
   { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" },
   { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" },
@@ -116,7 +116,7 @@ export default function Home() {
                 className="text-center"
               >
                 <p className="text-sm md:text-lg text-gray-500 mb-6 tracking-[0.2em] font-light">すぐわかる。すぐ使える。</p>
-                <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">Mirairo</h1>
+                <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">MieeL</h1>
               </motion.div>
             )}
           </motion.div>
@@ -134,7 +134,7 @@ export default function Home() {
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
             <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
-            Mirairo <span className="text-gray-500">v2.0</span>
+            MieeL <span className="text-gray-500">v2.0</span>
           </h1>
         </div>
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
@@ -153,7 +153,7 @@ export default function Home() {
            <motion.div variants={floating} animate="animate" className="mb-12">
              <motion.img 
                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 5, duration: 1.5 }}
-               src={LOGO_MAIN_PATH} alt="Mirairo Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
+               src={LOGO_MAIN_PATH} alt="MieeL Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
              />
            </motion.div>
            
@@ -179,7 +179,7 @@ export default function Home() {
           <ScrollReveal>
             <div className="border-t border-gray-200 pt-32">
               <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl text-black">
-                Mirairoは、特別支援教育の現場における<br className="hidden md:block"/>
+                MieeLは、特別支援教育の現場における<br className="hidden md:block"/>
                 <span className="text-blue-600">「経験」</span>や<span className="text-blue-600">「勘」</span>に、
                 データという新たな<span className="text-blue-600">「根拠」</span>をプラスします。
               </h3>
@@ -195,7 +195,7 @@ export default function Home() {
         {/* 3. メインメニュー */}
         <section className="px-6 md:px-20 mb-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             <MenuCard title="Mirairo アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
+             <MenuCard title="MieeL アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
              <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
              <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
              <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
@@ -225,7 +225,7 @@ export default function Home() {
             />
           </div>
           <div className="text-center text-gray-500 text-xs tracking-widest">
-            &copy; 2025 Mirairo Project. All Rights Reserved.
+            &copy; 2025 MieeL Project. All Rights Reserved.
           </div>
         </footer>
       </div>
@@ -375,9 +375,9 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
       case 'apps':
         return (
           <div>
-             <ModalHeader title="Mirairo Apps" sub="現場の困りごとを解決するアプリケーション" />
+             <ModalHeader title="MieeL Apps" sub="現場の困りごとを解決するアプリケーション" />
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {mirairoApps.map((app, i) => (
+                {MieeLApps.map((app, i) => (
                   <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
                      className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-xl hover:shadow-xl"
                   >
@@ -448,7 +448,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
       case 'school':
         return (
           <div>
-             <ModalHeader title="Introduction" sub="Mirairoアプリ導入校・研究協力校" />
+             <ModalHeader title="Introduction" sub="MieeLアプリ導入校・研究協力校" />
              <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl mb-10 hover:bg-white hover:shadow-lg transition-colors duration-500 group">
                <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900"><School className="text-blue-600" size={32} /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
                <p className="text-gray-700 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
