@@ -17,12 +17,12 @@ async function getAuth() {
     },
     scopes: [
       "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/drive.readonly" // ドライブ権限追加
+      "https://www.googleapis.com/auth/drive.readonly"
     ],
   });
 }
 
-// --- 共通: IDの取得ヘルパー ---
+// --- 共通: IDの取得 ---
 function getSpreadsheetId(mode: "under7" | "over7") {
   return mode === "under7" 
     ? process.env.SPREADSHEET_ID_UNDER7 
@@ -30,7 +30,7 @@ function getSpreadsheetId(mode: "under7" | "over7") {
 }
 
 // ==========================================================
-// 1. チャートデータの送信 (修正: URLを返す)
+// 1. チャートデータの送信 (修正: 完全インメモリ計算)
 // ==========================================================
 export async function submitChartData(mode: "under7" | "over7", answers: Record<string, string>) {
   try {
@@ -39,6 +39,7 @@ export async function submitChartData(mode: "under7" | "over7", answers: Record<
     const spreadsheetId = getSpreadsheetId(mode);
     const sheetName = "シート1";
 
+    // カテゴリーと選択肢の定義
     const categories = mode === "under7" 
       ? ["認知力・操作", "認知力・注意力", "集団参加", "生活動作", "言語理解", "表出言語", "記憶", "読字", "書字", "粗大運動", "微細運動", "数の概念"]
       : ["自己管理スキル", "行動調整スキル", "社会的コミュニケーション", "協働スキル", "実用リテラシー", "実用数学", "健康・安全スキル", "情報活用スキル", "地域利用・社会参加スキル", "進路・職業スキル"];
@@ -47,61 +48,71 @@ export async function submitChartData(mode: "under7" | "over7", answers: Record<
       ? ["0〜3ヶ月", "3〜6ヶ月", "6〜9ヶ月", "9〜12ヶ月", "12～18ヶ月", "18～24ヶ月", "2～3歳", "3～4歳", "4～5歳", "5～6歳", "6～7歳"]
       : ["8〜10歳", "10〜12歳", "12～14歳", "14〜16歳", "16歳以上"];
 
+    // 年齢マップ作成
     const ageMap: Record<string, number> = {};
     options.forEach((opt, i) => { ageMap[opt] = i + 1; });
-
-    // データ準備
-    const valuesToWrite = categories.map(cat => [cat, "", answers[cat] || ""]);
-    const convertedValues = categories.map(cat => {
-      const val = answers[cat];
-      return val ? [ageMap[val]] : [""];
-    });
-
-    // 書き込み実行
-    await Promise.all([
-      sheets.spreadsheets.values.update({
-        spreadsheetId, range: `${sheetName}!A3:C${3 + categories.length}`,
-        valueInputOption: "RAW", requestBody: { values: valuesToWrite },
-      }),
-      sheets.spreadsheets.values.update({
-        spreadsheetId, range: `${sheetName}!B3:B${3 + categories.length}`,
-        valueInputOption: "RAW", requestBody: { values: convertedValues },
-      })
-    ]);
-
-    // 次のステップ計算
-    const currentData = valuesToWrite;
-    const currentSteps = convertedValues;
-    const maxStep = options.length;
-    
-    const nextStepValues = currentSteps.map((row) => {
-      const step = parseInt(row[0] as string);
-      return !isNaN(step) ? [Math.min(maxStep, step + 1)] : [""];
-    });
-
     const reverseAgeMap = Object.fromEntries(Object.entries(ageMap).map(([k, v]) => [v, k]));
-    const nextStepLabels = nextStepValues.map((row) => {
-      const step = row[0];
-      return [reverseAgeMap[step as number] || "該当なし"];
+    const maxStep = options.length;
+
+    // --- 計算処理 (すべてサーバーメモリ内で完結させる) ---
+
+    // 1. 現在の状態 (上段用)
+    const currentStatusRows = categories.map(cat => {
+      const selectedOption = answers[cat] || "";
+      const ageNum = selectedOption ? ageMap[selectedOption] : "";
+      
+      // [カテゴリー名, 年齢数値(B列), 年齢テキスト(C列)]
+      return [cat, ageNum, selectedOption];
     });
 
-    // 下段書き込み
-    await Promise.all([
-      sheets.spreadsheets.values.update({
-        spreadsheetId, range: `${sheetName}!A19:A${19 + categories.length}`,
-        valueInputOption: "RAW", requestBody: { values: categories.map(c => [c]) },
-      }),
-      sheets.spreadsheets.values.update({
-        spreadsheetId, range: `${sheetName}!B19:B${19 + categories.length}`,
-        valueInputOption: "RAW", requestBody: { values: nextStepValues },
-      }),
-      sheets.spreadsheets.values.update({
-        spreadsheetId, range: `${sheetName}!C19:C${19 + categories.length}`,
-        valueInputOption: "RAW", requestBody: { values: nextStepLabels },
-      })
-    ]);
+    // 2. 次のステップ (下段用)
+    const nextStepRows = currentStatusRows.map(row => {
+      const cat = row[0];
+      const currentNum = row[1];
+      
+      let nextNum: number | string = "";
+      let nextText = "該当なし";
 
-    // 成功したらURLを返す
+      if (typeof currentNum === 'number') {
+        // 最大値を超えないように +1
+        nextNum = Math.min(maxStep, currentNum + 1);
+        // 数値からテキストに戻す
+        // nextNumはnumber型なのでtoStringしてキー検索など微調整
+        nextText = reverseAgeMap[nextNum.toString()] || "該当なし";
+      }
+
+      // [カテゴリー名, 次の数値(B列), 次のテキスト(C列)]
+      return [cat, nextNum, nextText];
+    });
+
+    // --- 書き込みデータの整形 ---
+    // 上段 (A3:C14)
+    const rangeUpper = `${sheetName}!A3:C${3 + categories.length}`;
+    const dataUpper = currentStatusRows;
+
+    // 下段 (A19:C30)
+    const rangeLower = `${sheetName}!A19:C${19 + categories.length}`;
+    const dataLower = nextStepRows;
+
+    // --- 一括書き込み実行 ---
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        valueInputOption: "USER_ENTERED", // 数値を正しく数値として認識させる
+        data: [
+          {
+            range: rangeUpper,
+            values: dataUpper
+          },
+          {
+            range: rangeLower,
+            values: dataLower
+          }
+        ]
+      }
+    });
+
+    // 成功URL
     const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
     return { success: true, url: spreadsheetUrl };
 
@@ -122,13 +133,11 @@ export async function downloadExcel(mode: "under7" | "over7") {
 
     if (!fileId) throw new Error("Spreadsheet ID not found");
 
-    // Google Drive APIを使ってExcel形式でエクスポート
     const response = await drive.files.export({
       fileId: fileId,
       mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     }, { responseType: "arraybuffer" });
 
-    // バイナリデータをBase64文字列に変換してクライアントに送る
     const buffer = Buffer.from(response.data as ArrayBuffer);
     const base64 = buffer.toString("base64");
 
@@ -141,41 +150,32 @@ export async function downloadExcel(mode: "under7" | "over7") {
 }
 
 // ==========================================================
-// 3. 目安データの取得 (Pythonロジックの移植)
+// 3. 目安データの取得
 // ==========================================================
 export async function getGuidelineData(mode: "under7" | "over7") {
   try {
     const auth = await getAuth();
     const sheets = google.sheets({ version: "v4", auth });
     const spreadsheetId = getSpreadsheetId(mode);
-    
-    // Pythonコードの指定通り、under7は「シート2」、over7は「シート3」
     const sheetName = mode === "under7" ? "シート2" : "シート3";
 
-    // データを一括取得
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${sheetName}!A1:V`, // 広めに取得
+      range: `${sheetName}!A1:V`,
     });
 
     const rows = response.data.values;
     if (!rows || rows.length === 0) return { success: false, error: "No data found" };
 
     const headers = rows[0].map((h: string) => h.trim());
-    
-    // { カテゴリ名: { 1: "説明...", 2: "説明..." } } の形式に変換
     const dataMap: Record<string, Record<number, string>> = {};
     headers.forEach((h: string) => { dataMap[h] = {}; });
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
-      // V列 (index 21) に Age Step (1, 2, 3...) が入っている前提
       if (row.length > 21) {
-        const ageStepStr = row[21]; // V列
-        const ageStep = parseInt(ageStepStr);
-
+        const ageStep = parseInt(row[21]); // V列
         if (!isNaN(ageStep)) {
-          // 各列を走査してデータを格納
           headers.forEach((header: string, colIndex: number) => {
             if (colIndex < row.length && row[colIndex]) {
               dataMap[header][ageStep] = row[colIndex];
