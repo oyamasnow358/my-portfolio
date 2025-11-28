@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, Youtube, Video, ExternalLink, PlayCircle, Info
+  ArrowLeft, Youtube, Video, ExternalLink, PlayCircle, Info, ArrowUpRight // ← これを追加しました
 } from "lucide-react";
 import Link from "next/link";
 
