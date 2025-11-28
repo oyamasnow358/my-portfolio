@@ -3,9 +3,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, Cpu, Copy, CheckCircle, FileText, 
-  Lightbulb, Sparkles, MessageSquare, Settings, ChevronDown, ChevronUp
+  Lightbulb, Sparkles, MessageSquare, Settings, 
+  ChevronDown, ChevronUp, Download
 } from "lucide-react";
 import Link from "next/link";
+
+// Excel操作用
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 // ==========================================
 // 定数・設定
@@ -16,7 +21,7 @@ const SUBJECT_OPTIONS = [
   "体育", "家庭", "外国語活動", "総合的な学習の時間", "保険", "数学"
 ];
 
-const LOGO_PATH = "/MieeL2.png"; // 白背景用ロゴ
+const LOGO_PATH = "/MieeL2.png"; 
 
 export default function AiPlanningPage() {
   // ==========================================
@@ -39,13 +44,13 @@ export default function AiPlanningPage() {
   // プロンプト④用
   const [p4SelectedSubjects, setP4SelectedSubjects] = useState<string[]>([]);
   const [p4SubjectInputs, setP4SubjectInputs] = useState<Record<string, string>>({});
-  const [p4Reference, setP4Reference] = useState("（例：文字を読むことに抵抗がある、数の概念が理解しづらい...）");
+  const [p4Reference, setP4Reference] = useState("（例：文字を読むことに抵抗がある、数の概念が理解しづらい、落ち着いて座っていられない、友達とのコミュニケーションが苦手など）、不適切行動が起きた時に繰り返さないようにする。絵カードや手話による要求を増やす。など）");
   const [p4Output, setP4Output] = useState("");
 
   // プロンプト⑤用
   const [p5UseFile, setP5UseFile] = useState(false);
   const [p5Reference, setP5Reference] = useState("（例：個別の指導計画の「指導の目標および内容」の全文や、特に見てほしい部分など）");
-  const [p5Activity, setP5Activity] = useState("【自立活動】：・教員の誘導で肩や首の力を抜き、胸を張った姿勢で活動できた。\n【国語】：自分の名前を丁寧になぞり書きできた。");
+  const [p5Activity, setP5Activity] = useState("【自立活動】：・教員の誘導で肩や首の力を抜き、胸を張った姿勢で活動できた。・片手で支えながら片足立ちができた。\n【国語】：自分の名前を丁寧になぞり書きできた。");
   const [p5Output, setP5Output] = useState("");
 
   // プロンプト⑥用
@@ -55,18 +60,110 @@ export default function AiPlanningPage() {
   const [p6Points, setP6Points] = useState("- 大きなけがもなく元気に登校できたことの喜び。\n- 友人との関わりが前向きになった点。\n- 宿泊学習などの大きな行事を乗り越えた自信。\n- 家庭との連携への感謝。");
   const [p6Output, setP6Output] = useState("");
 
+  // Excel用
+  const [json1, setJson1] = useState("");
+  const [json2, setJson2] = useState("");
+  const [json3, setJson3] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
   // ==========================================
   // ロジック関数
   // ==========================================
 
-  // クリップボードコピー
   const copyToClipboard = (text: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    alert("クリップボードにコピーしました！");
+    alert("コピーしました！");
   };
 
-  // プロンプト①生成
+  // --- Excel生成処理 ---
+  const handleGenerateExcel = async () => {
+    setIsGenerating(true);
+    try {
+      // 1. テンプレート読み込み (publicフォルダのプラン.xlsx)
+      const response = await fetch("/プラン.xlsx");
+      if (!response.ok) throw new Error("テンプレートファイル(プラン.xlsx)が見つかりません。publicフォルダに配置してください。");
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+
+      // JSON解析ヘルパー
+      const parseJsonSafe = (input: string) => {
+        try {
+          const cleaned = input.replace(/```json\s*|\s*```/g, "").trim();
+          const start = cleaned.indexOf('{');
+          const end = cleaned.lastIndexOf('}') + 1;
+          if (start !== -1 && end !== -1) {
+            return JSON.parse(cleaned.substring(start, end));
+          }
+          return JSON.parse(cleaned);
+        } catch (e) {
+          console.error("JSON Parse Error", e);
+          return null;
+        }
+      };
+
+      // 書き込みヘルパー
+      const writeCell = (sheetName: string, cellAddress: string, value: string) => {
+        const sheet = workbook.getWorksheet(sheetName);
+        if (sheet) {
+          const cell = sheet.getCell(cellAddress);
+          cell.value = value;
+          cell.alignment = { wrapText: true, vertical: 'top', horizontal: 'left' };
+        }
+      };
+
+      // 2. 書き込み実行
+      // プロンプト① (プランA)
+      if (json1) {
+        const data1 = parseJsonSafe(json1);
+        if (data1) {
+          writeCell("プランＡ", "D12", data1.needs || "");
+          writeCell("プランＡ", "D15", data1.accommodations || "");
+        }
+      }
+      // プロンプト② (プランA)
+      if (json2) {
+        const data2 = parseJsonSafe(json2);
+        if (data2) {
+          writeCell("プランＡ", "D18", data2.goals || "");
+          writeCell("プランＡ", "E18", data2.support || "");
+        }
+      }
+      // プロンプト③ (プランB)
+      if (json3) {
+        const data3 = parseJsonSafe(json3);
+        if (data3) {
+          writeCell("プランＢ(実態)", "C5", data3.policy || "");
+          writeCell("プランＢ(実態)", "D8", data3.status_1 || "");
+          writeCell("プランＢ(実態)", "D10", data3.status_2 || "");
+          writeCell("プランＢ(実態)", "D12", data3.status_3 || "");
+          writeCell("プランＢ(実態)", "D14", data3.status_4 || "");
+          writeCell("プランＢ(実態)", "D16", data3.status_5 || "");
+          writeCell("プランＢ(実態)", "D18", data3.status_6 || "");
+          writeCell("プランＢ(実態)", "D20", data3.status_7 || "");
+        }
+      }
+
+      // 3. ダウンロード
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(blob, "プラン_更新版.xlsx");
+      
+      alert("Excelファイルを作成しました！");
+
+    } catch (error) {
+      console.error(error);
+      alert(`エラーが発生しました: ${error}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // --- プロンプト生成ロジック (省略なし) ---
+
+  // プロンプト①
   const generatePrompt1 = () => {
     const commonInstructions = `
 【出力項目】：
@@ -102,9 +199,8 @@ export default function AiPlanningPage() {
 - 各項目の文量は200〜300文字程度で、柔らかく教育的な表現で整えてください。
 `;
 
-    let finalPrompt = "";
     if (mode === "excel") {
-      finalPrompt = `以下の実態や課題をもとに、特別支援教育に関する「プランA」の項目を作成してください。
+      setP1Output(`以下の実態や課題をもとに、特別支援教育に関する「プランA」の項目を作成してください。
 ただし、出力形式は指定の【JSON形式】のみとします。前置きや解説は不要です。
 
 【入力】実態や課題：
@@ -117,14 +213,14 @@ ${commonInstructions}
 JSONのvalue（値）については、以下のルールを厳守してください。
 
 1. **タイトルの除外**：
-   出力テキストには「1.特別な教育的ニーズ」や「2.合理的配慮の実施内容」といったタイトル行を含めないでください。
+   Excelのセルに既にヘッダーがあるため、出力テキストには「1.特別な教育的ニーズ」や「2.合理的配慮の実施内容」といった**タイトル行を含めないでください**。中身の文章のみを記述してください。
 
 2. **改行の厳守**：
    Excelのセル内で見やすくするため、以下の箇所の直前には**必ず改行**を入れてください。
    - 「①」「②」「③」などの番号の直前
    - 「・」などの箇条書き記号の直前
    - 「従って、」「支援に当たっては、」などの段落の変わり目の直前
-
+   
 3. **余計な記号の禁止**：
    - Gemini等で表示される**「**」（太字強調）などのMarkdown記号は一切使用しないでください**。プレーンテキストのみにしてください。
 
@@ -132,18 +228,17 @@ JSONのvalue（値）については、以下のルールを厳守してくだ�
 {
   "needs": "特別な教育的ニーズの内容のみ（タイトル不要、整形ルールに従う）",
   "accommodations": "合理的配慮の実施内容のみ（タイトル不要、整形ルールに従う）"
-}`;
+}`);
     } else {
-      finalPrompt = `以下の実態や課題をもとに、特別支援教育に関する「プランA」の以下の項目を作成してください。
+      setP1Output(`以下の実態や課題をもとに、特別支援教育に関する「プランA」の以下の項目を作成してください。
 
 【入力】実態や課題：
 ${p1Input}
-${commonInstructions}`;
+${commonInstructions}`);
     }
-    setP1Output(finalPrompt);
   };
 
-  // プロンプト②生成
+  // プロンプト②
   const generatePrompt2 = () => {
     const commonInstructions = `
 【出力項目】：
@@ -162,17 +257,19 @@ ${commonInstructions}`;
 ②（50字以内程度で、学校現場で実践可能な支援内容を記載）  
 ③（50字以内程度で、学校現場で実践可能な支援内容を記載）
 
+・具体的な出力の形【出力フォーマット】 
+このような抽象的な表現でよい（次のプロンプトでより具体化するため）。  
+
 【条件】：
 - 「特別な教育的ニーズ」と対応が分かるように①～③の番号を揃えること。  
 - 各文は短くてもよいが、教育的で柔らかい表現にすること。  
 - 「～です。～ます。」調ではなく、「～である。」調で統一すること。  
 - 添付資料（「プランA」や「個別の教育支援計画」）の書き方を参考にしてよい。  
-- ここでは抽象的にまとめ、**次の段階（プランBなど）で具体化していくための基礎**として作成すること。  
+- ここでは抽象的にまとめ、**次の段階（プランBなど）で具体化していくための基礎**として作成すること。
 `;
 
-    let finalPrompt = "";
     if (mode === "excel") {
-      finalPrompt = `以下の「特別な教育的ニーズ」に基づいて、「所属校による支援計画（プランA）」の項目を作成してください。
+      setP2Output(`以下の「特別な教育的ニーズ」に基づいて、「所属校による支援計画（プランA）」の項目を作成してください。
 ただし、出力形式は指定の【JSON形式】のみとします。前置きや解説は不要です。
 
 【参考】特別な教育的ニーズ：
@@ -197,18 +294,17 @@ JSONのvalue（値）については、以下のルールを厳守してくだ�
 {
   "goals": "支援目標の内容のみ（タイトル不要、整形ルールに従う）",
   "support": "支援内容の内容のみ（タイトル不要、整形ルールに従う）"
-}`;
+}`);
     } else {
-      finalPrompt = `以下の「特別な教育的ニーズ」に基づいて、「所属校による支援計画（プランA）」の項目を作成してください。
+      setP2Output(`以下の「特別な教育的ニーズ」に基づいて、「所属校による支援計画（プランA）」の項目を作成してください。
 
 【参考】特別な教育的ニーズ：
 ${p2Input}
-${commonInstructions}`;
+${commonInstructions}`);
     }
-    setP2Output(finalPrompt);
   };
 
-  // プロンプト③生成
+  // プロンプト③
   const generatePrompt3 = () => {
     const commonInstructions = `
 【出力項目】
@@ -258,9 +354,8 @@ ${commonInstructions}`;
    - **「**」（太字強調）などのMarkdown記号は一切使用しないでください**
 `;
 
-    let finalPrompt = "";
     if (mode === "excel") {
-      finalPrompt = `以下の実態・課題をもとに、特別支援計画「プランB」の項目を作成してください。
+      setP3Output(`以下の実態・課題をもとに、特別支援計画「プランB」の項目を作成してください。
 ただし、出力形式は指定の【JSON形式】のみとします。前置きや解説は不要です。
 
 【入力】実態・課題：
@@ -291,18 +386,17 @@ JSONのvalue（値）となる文字列については、以下の整形ルー�
   "status_5": "身体の動きの実態のみ（「⑤ 身体の動き」は含めない）",
   "status_6": "コミュニケーションの実態のみ（「⑥ コミュニケーション」は含めない）",
   "status_7": "その他の実態のみ（「⑦ その他」は含めない）"
-}`;
+}`);
     } else {
-      finalPrompt = `以下の実態・課題をもとに、特別支援計画「プランB」の項目を作成してください。
+      setP3Output(`以下の実態・課題をもとに、特別支援計画「プランB」の項目を作成してください。
 
 【入力】実態・課題：
 ${p3Input}
-${commonInstructions}`;
+${commonInstructions}`);
     }
-    setP3Output(finalPrompt);
   };
 
-  // プロンプト④生成 (教科ごと)
+  // プロンプト④
   const generatePrompt4 = () => {
     if (p4SelectedSubjects.length === 0) {
       alert("教科を選択してください。");
@@ -341,7 +435,7 @@ ${commonInstructions}`;
 目標：
 ・（目標1：30字以内）
 ・（目標2：30字以内）
-${numItems === 3 ? "・（目標3）" : ""}
+${numItems === 3 ? "・（目標3：30字以内）" : ""}
 
 手立て：
 ・（手立て1：30～50字）
@@ -363,7 +457,7 @@ ${numItems === 3 ? "・（手立て3：30～50字）" : ""}
     setP4Output(prompts.join("\n\n----------------------------------------\n\n"));
   };
 
-  // プロンプト⑤生成
+  // プロンプト⑤
   const generatePrompt5 = () => {
     let intro = "";
     let mainSource = "";
@@ -395,13 +489,12 @@ ${p5Activity}
 - 計画で言及されているすべての教科・領域について、評価文を個別に出力してください。
 - 各教科について、【教科名の見出し】と200～300文字程度の評価文を作成してください。
 - 文体は、実務で使用されるような柔らかく教育的な表現にしてください。
-- 各教科の例（美術：「・仙台七夕祭りの吹流し作りでは、折り染めに取り組んだ。染める色を３つ選択し、染める手元をよく見て色の滲みに注目して染めることができた。・土器作りではへらや縄、貝殻やビー玉などを粘土に押し付けて模様をつけることができた・土器の鑑賞では、友達の作品の中から気にいったものを２つ選ぶことができた。」）          
-`;
+- 各教科の例（美術：「・仙台七夕祭りの吹流し作りでは、折り染めに取り組んだ。染める色を３つ選択し、染める手元をよく見て色の滲みに注目して染めることができた。・土器作りではへらや縄、貝殻やビー玉などを粘土に押し付けて模様をつけることができた・土器の鑑賞では、友達の作品の中から気にいったものを２つ選ぶことができた。」）`;
 
     setP5Output(fullPrompt);
   };
 
-  // プロンプト⑥生成
+  // プロンプト⑥
   const generatePrompt6 = () => {
     let intro = "";
     let mainSource = "";
@@ -420,9 +513,13 @@ ${p5Activity}
 
     let specificConditions = "";
     if (p6Term === "前期") {
-      specificConditions = `- 「前期は、〜」といった書き出しで始めてください。\n- 200～400文字程度の文章量で作成してください。\n- 文末には「後期も引き続き、ご家庭と連携を取りながら、成長を見守っていきたいと思います。よろしくお願いいたします。」など、後期への連携を意識した一文を入れてください。`;
+      specificConditions = `- 「前期は、〜」といった書き出しで始めてください。
+- 200～400文字程度の文章量で作成してください。
+- 文末には「後期も引き続き、ご家庭と連携を取りながら、成長を見守っていきたいと思います。よろしくお願いいたします。」など、後期への連携を意識した一文を入れてください。`;
     } else {
-      specificConditions = `- 「この1年間で〜」や「いよいよ来年度は〜」など、年度の区切りを感じさせる書き出しにしてください。\n- 200〜450文字程度の文章量で作成してください。\n- 文末には、保護者への感謝と、次年度に向けた応援の言葉を必ず含めてください。`;
+      specificConditions = `- 「この1年間で〜」や「いよいよ来年度は〜」など、年度の区切りを感じさせる書き出しにしてください。
+- 200〜450文字程度の文章量で作成してください。
+- 文末には、保護者への感謝と、次年度に向けた応援の言葉を必ず含めてください。`;
     }
 
     const fullPrompt = `${intro}${mainSource}さらに【強調したいポイント】を盛り込みながら、保護者向けの「${p6Term}の所見」を作成してください。
@@ -819,6 +916,76 @@ ${specificConditions}`;
           </div>
         </PromptSection>
 
+        {/* ============================================================
+            ★ 岩槻はるかぜ機能 (Excelモード時のみ表示)
+           ============================================================ */}
+        <AnimatePresence>
+          {mode === "excel" && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-16 pt-16 border-t-2 border-dashed border-gray-300"
+            >
+              <div className="bg-green-50 border-2 border-green-200 rounded-3xl p-8 shadow-inner">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-green-600 text-white rounded-xl">
+                    <Sparkles size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-green-900">岩槻はるかぜ機能 (Excel自動入力)</h3>
+                    <p className="text-green-700 text-sm">AIが生成したJSONコードを貼り付けて、Excelに出力します。</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-green-800">1. プランA (プロンプト①・②の結果)</h4>
+                    <textarea 
+                      placeholder='プロンプト①のJSON結果を貼り付け (needs, accommodations)'
+                      value={json1} onChange={(e) => setJson1(e.target.value)}
+                      className="w-full h-32 p-3 text-xs font-mono border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500"
+                    />
+                    <textarea 
+                      placeholder='プロンプト②のJSON結果を貼り付け (goals, support)'
+                      value={json2} onChange={(e) => setJson2(e.target.value)}
+                      className="w-full h-32 p-3 text-xs font-mono border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-green-800">2. プランB (プロンプト③の結果)</h4>
+                    <textarea 
+                      placeholder='プロンプト③のJSON結果を貼り付け (policy, status...)'
+                      value={json3} onChange={(e) => setJson3(e.target.value)}
+                      className="w-full h-[270px] p-3 text-xs font-mono border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <button
+                    onClick={handleGenerateExcel}
+                    disabled={isGenerating}
+                    className="w-full py-5 bg-green-600 text-white text-lg font-bold rounded-2xl hover:bg-green-700 transition-all shadow-xl hover:shadow-2xl disabled:opacity-50 flex items-center justify-center gap-3"
+                  >
+                    {isGenerating ? (
+                      <span className="animate-pulse">処理中...</span>
+                    ) : (
+                      <>
+                        <Download size={24} /> Excelを作成してダウンロード
+                      </>
+                    )}
+                  </button>
+                  <p className="text-center text-xs text-green-600 mt-3 font-bold">
+                    ※ publicフォルダに「プラン.xlsx」が必要です。
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </main>
 
       <footer className="bg-gray-50 border-t border-gray-200 py-12 text-center text-gray-500 text-xs">
@@ -829,40 +996,59 @@ ${specificConditions}`;
 }
 
 // ==========================================
-// 部品コンポーネント
+// 部品コンポーネント (折りたたみ機能付き)
 // ==========================================
 
 function PromptSection({ title, desc, children, color, delay }: any) {
   const styles: any = {
-    purple: "border-purple-200 hover:border-purple-400 bg-purple-50 text-purple-900",
-    blue: "border-blue-200 hover:border-blue-400 bg-blue-50 text-blue-900",
-    emerald: "border-emerald-200 hover:border-emerald-400 bg-emerald-50 text-emerald-900",
-    orange: "border-orange-200 hover:border-orange-400 bg-orange-50 text-orange-900",
-    pink: "border-pink-200 hover:border-pink-400 bg-pink-50 text-pink-900",
-    indigo: "border-indigo-200 hover:border-indigo-400 bg-indigo-50 text-indigo-900",
+    purple: "border-purple-200 bg-purple-50",
+    blue: "border-blue-200 bg-blue-50",
+    emerald: "border-emerald-200 bg-emerald-50",
+    orange: "border-orange-200 bg-orange-50",
+    pink: "border-pink-200 bg-pink-50",
+    indigo: "border-indigo-200 bg-indigo-50",
   };
-
-  const currentStyle = styles[color] || styles.purple;
-  const borderColor = currentStyle.split(" ")[0];
-  const iconBg = currentStyle.split(" ").slice(2).join(" ");
+  
+  // 折りたたみ用のState
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay, duration: 0.8 }}
-      className={`bg-white border rounded-3xl p-8 mb-8 transition-all shadow-sm hover:shadow-xl ${borderColor}`}
+      className={`bg-white border rounded-3xl mb-6 transition-all shadow-sm hover:shadow-lg overflow-hidden ${styles[color]}`}
     >
-      <div className="flex items-start gap-4 mb-8 border-b pb-6 border-gray-100">
-        <div className={`p-3 rounded-2xl ${iconBg}`}>
-          <CheckCircle size={28} />
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-6 flex items-center justify-between text-left focus:outline-none"
+      >
+        <div className="flex items-center gap-4">
+          <div className={`p-2 rounded-xl bg-white/50`}>
+            <CheckCircle size={24} className={`text-${color}-600`} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+            <p className="text-gray-500 text-sm">{desc}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-2xl font-bold text-slate-900">{title}</h3>
-          <p className="text-gray-500 text-sm mt-1">{desc}</p>
-        </div>
-      </div>
-      {children}
+        {isOpen ? <ChevronUp className="text-gray-400" /> : <ChevronDown className="text-gray-400" />}
+      </button>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-t border-gray-100 bg-white"
+          >
+            <div className="p-8">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -872,13 +1058,13 @@ function OutputArea({ text, onCopy, color="gray" }: any) {
     <motion.div 
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
-      className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-6 relative group"
+      className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-6 relative"
     >
       <div className="flex justify-between items-center mb-2 px-2">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Generated Prompt</span>
         <button
           onClick={onCopy}
-          className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700 text-xs font-bold transition-colors shadow-sm"
+          className="flex items-center gap-2 px-3 py-1.5 bg-white border rounded-lg hover:bg-gray-100 text-xs font-bold shadow-sm"
         >
           <Copy size={14} /> コピー
         </button>
