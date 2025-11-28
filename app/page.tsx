@@ -25,8 +25,8 @@ const MieeLApps = [
   { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "/page/page5" },
   { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "/page/page4" },
   { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "/page/page3" },
-  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" },
-  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" },
+  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "/page/page7" },
+  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "/page/page6" },
 ];
 
 // 2. 分析ツール一覧
