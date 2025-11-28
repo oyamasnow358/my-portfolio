@@ -12,13 +12,15 @@ import {
 // ▼ データ設定エリア
 // ==========================================
 
+
 const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用（オープニング）
 const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用（メイン画面）
 
 // 1. MieeLアプリ一覧
 const MieeLApps = [
   { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
-  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "https://aspecial-education-app.onrender.com/%E6%8C%87%E5%B0%8E%E6%94%AF%E6%8F%B4%E5%86%85%E5%AE%B9" },
+  // ★変更箇所: 内部ページへのリンクに変更
+  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "/page/page1" },
   { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "https://aspecial-education-app.onrender.com/%E7%99%BA%E9%81%94%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88" },
   { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" },
   { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" },
@@ -138,7 +140,6 @@ export default function Home() {
           </h1>
         </div>
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
-          {/* ▼ 変更点: color指定を追加。この後定義するHeaderTagコンポーネントで色を受け取る */}
           <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} color="blue" />
           <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} color="purple" />
           <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} color="emerald" />
@@ -203,10 +204,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. フッター (ボタンに色と「ぬるっと」アニメーション追加) */}
+        {/* 4. フッター */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
-            {/* ▼ 変更点: delay（遅延）を設定して、順番にぬるっと出てくるように */}
             <LargeFooterBtn 
               title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} 
               onClick={() => setSelectedPage('profile')} color="blue" delay={0.1}
@@ -299,12 +299,8 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   );
 }
 
-// ▼ 変更点: 色定義マップとアニメーション(motion.button)を追加
-// 箱そのものに色をつけ、ぬるっと出現させる
+// フッターボタン
 function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title: string, sub: string, icon: any, onClick: () => void, color: "blue" | "emerald" | "purple" | "slate", delay?: number }) {
-  
-  // 色の定義（前よりも濃くして分かりやすくしました）
-  // blue-100などは白背景でもはっきり見えます
   const styles = {
     blue: "bg-blue-100 border-blue-300 hover:border-blue-500 text-blue-900",
     emerald: "bg-emerald-100 border-emerald-300 hover:border-emerald-500 text-emerald-900",
@@ -322,12 +318,10 @@ function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title
   return (
     <motion.button 
       onClick={onClick}
-      // 出現アニメーション：y:50から0へ、0.8秒かけてゆっくりと「ぬるっと」出す
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: delay, ease: [0.22, 1, 0.36, 1] }} // ぬるっとしたイージング
-      // ホバー時
+      transition={{ duration: 0.8, delay: delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: 1.02, backgroundColor: "#ffffff" }}
       whileTap={{ scale: 0.98 }}
       className={`
@@ -345,9 +339,8 @@ function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title
   );
 }
 
-// ▼ 変更点: タグの色分け実装。こちらも背景色を濃いめ(bg-*-100)に設定
+// ヘッダータグ
 function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
-  
   const styles = {
     blue: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200 hover:border-blue-500",
     purple: "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200 hover:border-purple-500",
@@ -378,7 +371,11 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <ModalHeader title="MieeL Apps" sub="現場の困りごとを解決するアプリケーション" />
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {MieeLApps.map((app, i) => (
-                  <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
+                  // ▼ 修正箇所: リンク判定
+                  <a key={i} 
+                     href={app.href} 
+                     target={app.href.startsWith("http") ? "_blank" : undefined} // 外部は_blank, 内部は指定なし
+                     rel={app.href.startsWith("http") ? "noopener noreferrer" : undefined}
                      className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-xl hover:shadow-xl"
                   >
                     <div className="flex justify-between mb-6">
