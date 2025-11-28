@@ -10,6 +10,7 @@ import Link from "next/link";
 
 // Excel操作用
 import ExcelJS from "exceljs";
+// @ts-ignore
 import { saveAs } from "file-saver";
 
 // ==========================================
@@ -76,11 +77,11 @@ export default function AiPlanningPage() {
     alert("コピーしました！");
   };
 
-  // --- Excel生成処理 ---
+  // --- Excel生成処理 (修正版: JSON抽出強化) ---
   const handleGenerateExcel = async () => {
     setIsGenerating(true);
     try {
-      // 1. テンプレート読み込み (publicフォルダのプラン.xlsx)
+      // 1. テンプレート読み込み
       const response = await fetch("/プラン.xlsx");
       if (!response.ok) throw new Error("テンプレートファイル(プラン.xlsx)が見つかりません。publicフォルダに配置してください。");
       
@@ -88,18 +89,24 @@ export default function AiPlanningPage() {
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(arrayBuffer);
 
-      // JSON解析ヘルパー
-      const parseJsonSafe = (input: string) => {
+      // ★ JSON抽出ヘルパー (ここを強化)
+      const extractJSON = (input: string) => {
         try {
-          const cleaned = input.replace(/```json\s*|\s*```/g, "").trim();
-          const start = cleaned.indexOf('{');
-          const end = cleaned.lastIndexOf('}') + 1;
-          if (start !== -1 && end !== -1) {
-            return JSON.parse(cleaned.substring(start, end));
+          if (!input) return null;
+          // 最初に見つかる '{' から 最後に見つかる '}' までを切り出す
+          const start = input.indexOf('{');
+          const end = input.lastIndexOf('}');
+          
+          if (start === -1 || end === -1 || start >= end) {
+            console.warn("有効なJSON括弧が見つかりません:", input);
+            return null;
           }
-          return JSON.parse(cleaned);
+          
+          const jsonString = input.substring(start, end + 1);
+          return JSON.parse(jsonString);
         } catch (e) {
-          console.error("JSON Parse Error", e);
+          console.error("JSON Parse Error:", e);
+          alert("貼り付けられたテキストからデータを読み取れませんでした。AIの出力が正しいJSON形式か確認してください。");
           return null;
         }
       };
@@ -109,31 +116,41 @@ export default function AiPlanningPage() {
         const sheet = workbook.getWorksheet(sheetName);
         if (sheet) {
           const cell = sheet.getCell(cellAddress);
+          // 値をセット
           cell.value = value;
+          // 書式設定（折り返し、左上揃え）
           cell.alignment = { wrapText: true, vertical: 'top', horizontal: 'left' };
+        } else {
+          console.warn(`シート「${sheetName}」が見つかりません。Excelファイルのシート名を確認してください。`);
         }
       };
 
+      let hasWritten = false;
+
       // 2. 書き込み実行
       // プロンプト① (プランA)
-      if (json1) {
-        const data1 = parseJsonSafe(json1);
+      if (json1.trim()) {
+        const data1 = extractJSON(json1);
         if (data1) {
           writeCell("プランＡ", "D12", data1.needs || "");
           writeCell("プランＡ", "D15", data1.accommodations || "");
+          hasWritten = true;
         }
       }
+      
       // プロンプト② (プランA)
-      if (json2) {
-        const data2 = parseJsonSafe(json2);
+      if (json2.trim()) {
+        const data2 = extractJSON(json2);
         if (data2) {
           writeCell("プランＡ", "D18", data2.goals || "");
           writeCell("プランＡ", "E18", data2.support || "");
+          hasWritten = true;
         }
       }
+      
       // プロンプト③ (プランB)
-      if (json3) {
-        const data3 = parseJsonSafe(json3);
+      if (json3.trim()) {
+        const data3 = extractJSON(json3);
         if (data3) {
           writeCell("プランＢ(実態)", "C5", data3.policy || "");
           writeCell("プランＢ(実態)", "D8", data3.status_1 || "");
@@ -143,7 +160,14 @@ export default function AiPlanningPage() {
           writeCell("プランＢ(実態)", "D16", data3.status_5 || "");
           writeCell("プランＢ(実態)", "D18", data3.status_6 || "");
           writeCell("プランＢ(実態)", "D20", data3.status_7 || "");
+          hasWritten = true;
         }
+      }
+
+      if (!hasWritten) {
+        alert("入力欄が空、または正しいデータが見つかりませんでした。");
+        setIsGenerating(false);
+        return;
       }
 
       // 3. ダウンロード
@@ -151,11 +175,11 @@ export default function AiPlanningPage() {
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       saveAs(blob, "プラン_更新版.xlsx");
       
-      alert("Excelファイルを作成しました！");
+      alert("Excelファイルを作成しました！ダウンロードフォルダを確認してください。");
 
     } catch (error) {
       console.error(error);
-      alert(`エラーが発生しました: ${error}`);
+      alert(`エラーが発生しました: ${error}\n詳細はコンソールを確認してください。`);
     } finally {
       setIsGenerating(false);
     }
@@ -257,15 +281,12 @@ ${commonInstructions}`);
 ②（50字以内程度で、学校現場で実践可能な支援内容を記載）  
 ③（50字以内程度で、学校現場で実践可能な支援内容を記載）
 
-・具体的な出力の形【出力フォーマット】 
-このような抽象的な表現でよい（次のプロンプトでより具体化するため）。  
-
 【条件】：
 - 「特別な教育的ニーズ」と対応が分かるように①～③の番号を揃えること。  
 - 各文は短くてもよいが、教育的で柔らかい表現にすること。  
 - 「～です。～ます。」調ではなく、「～である。」調で統一すること。  
 - 添付資料（「プランA」や「個別の教育支援計画」）の書き方を参考にしてよい。  
-- ここでは抽象的にまとめ、**次の段階（プランBなど）で具体化していくための基礎**として作成すること。
+- ここでは抽象的にまとめ、**次の段階（プランBなど）で具体化していくための基礎**として作成すること。  
 `;
 
     if (mode === "excel") {
@@ -489,7 +510,8 @@ ${p5Activity}
 - 計画で言及されているすべての教科・領域について、評価文を個別に出力してください。
 - 各教科について、【教科名の見出し】と200～300文字程度の評価文を作成してください。
 - 文体は、実務で使用されるような柔らかく教育的な表現にしてください。
-- 各教科の例（美術：「・仙台七夕祭りの吹流し作りでは、折り染めに取り組んだ。染める色を３つ選択し、染める手元をよく見て色の滲みに注目して染めることができた。・土器作りではへらや縄、貝殻やビー玉などを粘土に押し付けて模様をつけることができた・土器の鑑賞では、友達の作品の中から気にいったものを２つ選ぶことができた。」）`;
+- 各教科の例（美術：「・仙台七夕祭りの吹流し作りでは、折り染めに取り組んだ。染める色を３つ選択し、染める手元をよく見て色の滲みに注目して染めることができた。・土器作りではへらや縄、貝殻やビー玉などを粘土に押し付けて模様をつけることができた・土器の鑑賞では、友達の作品の中から気にいったものを２つ選ぶことができた。」）          
+`;
 
     setP5Output(fullPrompt);
   };
@@ -1000,6 +1022,7 @@ ${specificConditions}`;
 // ==========================================
 
 function PromptSection({ title, desc, children, color, delay }: any) {
+  // 色スタイルの簡易定義
   const styles: any = {
     purple: "border-purple-200 bg-purple-50",
     blue: "border-blue-200 bg-blue-50",
