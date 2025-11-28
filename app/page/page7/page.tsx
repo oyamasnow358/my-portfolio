@@ -2,11 +2,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
+  // ▼ 修正: 必要なアイコンをすべてインポートしました
   ArrowLeft, Search, Layers, Clock, GraduationCap, Video, FileText, 
-  ChevronDown, ChevronUp, Download, Tag, BookOpen, Image as ImageIcon
+  ChevronDown, ChevronUp, Download, Tag, BookOpen, Image as ImageIcon,
+  ArrowUpRight, CheckCircle, User, Cpu, LineChart
 } from "lucide-react";
 import Link from "next/link";
-import Papa from "papaparse"; // CSVパース用 (npm install papaparse @types/papaparse)
+import Papa from "papaparse"; // CSVパース用
 
 // ==========================================
 // 定数・型定義
@@ -73,6 +75,7 @@ export default function LessonLibraryPage() {
         const reader = response.body?.getReader();
         const result = await reader?.read();
         const decoder = new TextDecoder("utf-8");
+        // @ts-ignore
         const csv = decoder.decode(result?.value);
         
         Papa.parse(csv, {
