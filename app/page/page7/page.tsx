@@ -2,20 +2,29 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  // ▼ 修正: 必要なアイコンをすべてインポートしました
   ArrowLeft, Search, Layers, Clock, GraduationCap, Video, FileText, 
   ChevronDown, ChevronUp, Download, Tag, BookOpen, Image as ImageIcon,
-  ArrowUpRight, CheckCircle, User, Cpu, LineChart
+  ArrowUpRight, CheckCircle, User, Cpu, LineChart, Table, FileSpreadsheet,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import Link from "next/link";
-import Papa from "papaparse"; // CSVパース用
+import Papa from "papaparse"; 
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 // ==========================================
-// 定数・型定義
+// 定数・設定
 // ==========================================
-const CSV_PATH = "/lesson_cards.csv";
+const CSV_PATH = "/lesson_cards.csv"; // ライブラリ用CSV
 const LOGO_PATH = "/MieeL2.png";
 const ITEMS_PER_PAGE = 12;
+
+// ★ Googleスプレッドシートの「Webに公開」CSVリンク
+// ※ここに実際のCSVリンクを入れてください。
+const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxxxxxxxx/pub?output=csv"; 
+
+// GoogleフォームのURL
+const GOOGLE_FORM_URL = "https://leeson-abfy5bxayhavhoznzexj8r.streamlit.app/";
 
 type LessonCard = {
   id: string;
@@ -50,23 +59,25 @@ export default function LessonLibraryPage() {
   // ==========================================
   // State管理
   // ==========================================
+  const [activeTab, setActiveTab] = useState<"library" | "generator">("library");
+
+  // --- Library用 ---
   const [lessons, setLessons] = useState<LessonCard[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // 検索・フィルタ
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("全て");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  
-  // ページネーション
   const [currentPage, setCurrentPage] = useState(1);
-
-  // 詳細表示
   const [selectedLesson, setSelectedLesson] = useState<LessonCard | null>(null);
   const [showFlow, setShowFlow] = useState(false);
 
+  // --- Generator用 ---
+  const [sheetData, setSheetData] = useState<any[]>([]);
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<string>("");
+
   // ==========================================
-  // データ読み込み (CSV)
+  // データ読み込み (ライブラリ用CSV)
   // ==========================================
   useEffect(() => {
     const fetchCsv = async () => {
@@ -123,7 +134,98 @@ export default function LessonLibraryPage() {
   }, []);
 
   // ==========================================
-  // フィルタリング処理
+  // Generator機能: スプレッドシート読み込み & Excel生成
+  // ==========================================
+  const loadGoogleSheet = async () => {
+    setSheetLoading(true);
+    try {
+      // 公開CSVからデータを取得
+      const response = await fetch(GOOGLE_SHEET_CSV_URL);
+      if (!response.ok) throw new Error("スプレッドシートの読み込みに失敗しました。URLを確認してください。");
+      
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          setSheetData(results.data);
+          alert(`${results.data.length}件の回答を読み込みました！`);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      alert("読み込みエラー: スプレッドシートの公開URLが正しく設定されていません。");
+    } finally {
+      setSheetLoading(false);
+    }
+  };
+
+  const generateExcel = async () => {
+    if (!selectedRowIndex) return alert("出力するデータを選択してください。");
+    
+    const rowData = sheetData[Number(selectedRowIndex)];
+    if (!rowData) return;
+
+    try {
+      // テンプレート読み込み
+      const response = await fetch("/授業カード.xlsm");
+      if (!response.ok) throw new Error("テンプレートファイル(授業カード.xlsm)が見つかりません。publicフォルダに配置してください。");
+      
+      const arrayBuffer = await response.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
+      
+      // シート取得
+      const ws = workbook.getWorksheet("授業カード");
+      if (!ws) throw new Error("シート「授業カード」が見つかりません。");
+
+      // マッピング定義 (フォームの項目名 -> セル番地)
+      const mapping: Record<string, string> = {
+        '知的段階及び発達段階': 'B2',
+        '単元名': 'B3',
+        'キャッチコピー': 'B5',
+        '授業のねらい': 'B9',
+        '学部学年': 'A5',
+        '障害種': 'A2',
+        '授業時間': 'A4',
+        '準備物': 'B15',
+        '導入の内容': 'B11',
+        '展開の内容': 'B12',
+        'まとめの内容': 'B13',
+        '授業のPOINT': 'B10',
+        '検索ワード': 'B23',
+        'ICT活用': 'B21',
+        '教科': 'A3',
+        '学習形態': 'B7',
+        '授業タイトル': 'B4',
+        '単元内で何回目の授業か': 'B8',
+      };
+
+      // 書き込み
+      Object.keys(mapping).forEach(key => {
+        const cellAddr = mapping[key];
+        let val = rowData[key] || "";
+        ws.getCell(cellAddr).value = val;
+      });
+
+      // ダウンロード
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.ms-excel.sheet.macroEnabled.12" });
+      const filename = `${rowData['単元名'] || '授業カード'}.xlsm`;
+      saveAs(blob, filename);
+      
+      alert("Excelファイルを作成しました！");
+
+    } catch (e: any) {
+      console.error(e);
+      alert(`エラー: ${e.message}`);
+    }
+  };
+
+
+  // ==========================================
+  // フィルタリング処理 (Library)
   // ==========================================
   const allSubjects = ["全て", ...Array.from(new Set(lessons.map(l => l.subject).filter(Boolean))).sort()];
   const allTags = Array.from(new Set(lessons.flatMap(l => l.hashtags))).sort();
@@ -132,33 +234,34 @@ export default function LessonLibraryPage() {
     const matchesSearch = (
       lesson.unit_name + lesson.catch_copy + lesson.subject + lesson.goal + lesson.hashtags.join("")
     ).toLowerCase().includes(searchQuery.toLowerCase());
-    
     const matchesSubject = selectedSubject === "全て" || lesson.subject === selectedSubject;
-    
     const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => lesson.hashtags.includes(tag));
-
     return matchesSearch && matchesSubject && matchesTags;
   });
 
-  // ページネーション計算
   const totalPages = Math.ceil(filteredLessons.length / ITEMS_PER_PAGE);
   const currentLessons = filteredLessons.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // ==========================================
-  // ハンドラー
-  // ==========================================
   const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     setCurrentPage(1);
   };
 
+  // ページ番号配列を生成する関数
+  const getPageNumbers = (current: number, total: number) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
+
   // ==========================================
-  // 表示 (メイン)
+  // 表示 (詳細ページ)
   // ==========================================
   if (selectedLesson) {
     return (
@@ -173,6 +276,9 @@ export default function LessonLibraryPage() {
     );
   }
 
+  // ==========================================
+  // 表示 (メイン)
+  // ==========================================
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden relative">
       
@@ -211,116 +317,225 @@ export default function LessonLibraryPage() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">授業カードライブラリー</h2>
           <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
             先生方の実践授業アイデアを共有・検索できるデータベース。<br/>
-            教科やタグで絞り込んで、明日の授業のヒントを見つけましょう。
+            GoogleフォームからのExcel生成機能も搭載しています。
           </p>
+        </motion.div>
+
+        {/* タブ切り替え */}
+        <div className="flex justify-center gap-4 mb-12">
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`px-8 py-3 rounded-full font-bold text-sm transition-all shadow-md ${
+              activeTab === "library" 
+                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                : "bg-white text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            📚 ライブラリー検索
+          </button>
+          <button
+            onClick={() => setActiveTab("generator")}
+            className={`px-8 py-3 rounded-full font-bold text-sm transition-all shadow-md ${
+              activeTab === "generator" 
+                ? "bg-emerald-600 text-white hover:bg-emerald-700" 
+                : "bg-white text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            📝 Excelカード作成
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
           
-          <a href="/page/page7.5" target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-2 mt-6 px-8 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-             <span>📝</span> 授業カードを作成する (Googleフォーム)
-          </a>
-        </motion.div>
-
-        {/* 検索・フィルタエリア */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white border border-gray-200 rounded-2xl p-6 mb-12 shadow-sm"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">キーワード検索</label>
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  placeholder="単元名、ねらい、タグなど..."
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
+          {/* === ライブラリーモード === */}
+          {activeTab === "library" && (
+            <motion.div
+              key="library"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* 検索・フィルタ */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-12 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">キーワード検索</label>
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                        placeholder="単元名、ねらい、タグなど..."
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">教科で絞り込み</label>
+                    <select 
+                      value={selectedSubject}
+                      onChange={(e) => { setSelectedSubject(e.target.value); setCurrentPage(1); }}
+                      className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      {allSubjects.map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">タグで絞り込み</label>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => handleTagToggle(tag)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${selectedTags.includes(tag) ? "bg-blue-100 border-blue-500 text-blue-800" : "bg-white border-gray-200 text-gray-600 hover:border-blue-300"}`}
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">教科で絞り込み</label>
-              <select 
-                value={selectedSubject}
-                onChange={(e) => { setSelectedSubject(e.target.value); setCurrentPage(1); }}
-                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 cursor-pointer"
-              >
-                {allSubjects.map(sub => (
-                  <option key={sub} value={sub}>{sub}</option>
-                ))}
-              </select>
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">タグで絞り込み</label>
-            <div className="flex flex-wrap gap-2">
-              {allTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagToggle(tag)}
-                  className={`
-                    px-3 py-1.5 rounded-lg text-xs font-bold border transition-all
-                    ${selectedTags.includes(tag) 
-                      ? "bg-blue-100 border-blue-500 text-blue-800" 
-                      : "bg-white border-gray-200 text-gray-600 hover:border-blue-300"}
-                  `}
-                >
-                  #{tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+              {/* カード一覧 */}
+              {loading ? (
+                <div className="text-center py-20 text-gray-500">Loading...</div>
+              ) : filteredLessons.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border border-gray-200"><p className="text-gray-500">該当なし</p></div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                  {currentLessons.map((lesson, i) => (
+                    <LessonCardItem key={lesson.id} lesson={lesson} onClick={() => setSelectedLesson(lesson)} index={i} />
+                  ))}
+                </div>
+              )}
 
-        {/* 授業カード一覧 */}
-        {loading ? (
-          <div className="text-center py-20 text-gray-500">Loading...</div>
-        ) : filteredLessons.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
-            <p className="text-gray-500">該当する授業カードはありません。</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            <AnimatePresence mode="popLayout">
-              {currentLessons.map((lesson, i) => (
-                <LessonCardItem 
-                  key={lesson.id} 
-                  lesson={lesson} 
-                  onClick={() => setSelectedLesson(lesson)} 
-                  index={i} 
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
+              {/* ★★★ 数字付きページネーション ★★★ */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-12">
+                  {/* 前へボタン */}
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
 
-        {/* ページネーション */}
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2">
-            <button 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50"
+                  {/* 数字ボタン */}
+                  {getPageNumbers(currentPage, totalPages).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`
+                          px-4 py-2 rounded-lg font-bold transition-all border
+                          ${currentPage === p 
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md" 
+                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"}
+                        `}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-2 text-gray-400">...</span>
+                    )
+                  ))}
+
+                  {/* 次へボタン */}
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+
+            </motion.div>
+          )}
+
+          {/* === Excel作成モード === */}
+          {activeTab === "generator" && (
+            <motion.div
+              key="generator"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-emerald-50 border border-emerald-200 rounded-3xl p-8 md:p-12 shadow-inner"
             >
-              Prev
-            </button>
-            <span className="px-4 py-2 font-bold text-gray-600">
-              {currentPage} / {totalPages}
-            </span>
-            <button 
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50"
-            >
-              Next
-            </button>
-          </div>
-        )}
+              <div className="flex items-center gap-4 mb-8">
+                <div className="p-4 bg-emerald-600 text-white rounded-2xl shadow-lg">
+                  <FileSpreadsheet size={32} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-emerald-900">Excel授業カード自動作成</h3>
+                  <p className="text-emerald-700">Googleフォームの回答から、Excelファイル（.xlsm）を生成します。</p>
+                </div>
+              </div>
+
+              <div className="space-y-8 bg-white/80 backdrop-blur-sm p-8 rounded-2xl border border-emerald-100">
+                
+                {/* 1. フォームを開く */}
+                <div>
+                  <h4 className="text-lg font-bold text-emerald-800 mb-2">1. データを入力する</h4>
+                  <a href={GOOGLE_FORM_URL} target="_blank" rel="noopener noreferrer" 
+                     className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-emerald-600 text-emerald-600 rounded-full font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                     <FileText size={18} /> Googleフォームを開く
+                  </a>
+                </div>
+
+                {/* 2. データを読み込む */}
+                <div>
+                  <h4 className="text-lg font-bold text-emerald-800 mb-2">2. 回答データを読み込む</h4>
+                  <button 
+                    onClick={loadGoogleSheet}
+                    disabled={sheetLoading}
+                    className="w-full md:w-auto px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {sheetLoading ? "読み込み中..." : "🔄 最新の回答を取得"}
+                  </button>
+                </div>
+
+                {/* 3. 選択してダウンロード */}
+                {sheetData.length > 0 && (
+                  <div className="pt-4 border-t border-emerald-100">
+                    <h4 className="text-lg font-bold text-emerald-800 mb-4">3. 出力するデータを選択</h4>
+                    <select 
+                      value={selectedRowIndex}
+                      onChange={(e) => setSelectedRowIndex(e.target.value)}
+                      className="w-full p-4 bg-white border-2 border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-900 mb-4"
+                    >
+                      <option value="">▼ 選択してください</option>
+                      {sheetData.map((row: any, i: number) => (
+                        <option key={i} value={i}>
+                          [{row['タイムスタンプ']}] {row['単元名']} - {row['授業タイトル'] || 'タイトルなし'}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button 
+                      onClick={generateExcel}
+                      disabled={!selectedRowIndex}
+                      className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    >
+                      <Download size={24} /> Excelを作成してダウンロード
+                    </button>
+                    <p className="text-xs text-emerald-600 mt-2 text-center font-bold">
+                      ※ publicフォルダに「授業カード.xlsm」が必要です。
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
 
@@ -332,14 +547,14 @@ export default function LessonLibraryPage() {
 }
 
 // ==========================================
-// カードコンポーネント (一覧用)
+// コンポーネント群
 // ==========================================
+
 function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClick: () => void, index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: index * 0.05 }}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       className="group bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer flex flex-col h-full"
@@ -365,8 +580,8 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
         </p>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <Badge icon={<GraduationCap size={12}/>} text={lesson.target_grade} />
-          <Badge icon={<Clock size={12}/>} text={lesson.duration} />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-bold border border-gray-200"><GraduationCap size={12}/> {lesson.target_grade}</span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-bold border border-gray-200"><Clock size={12}/> {lesson.duration}</span>
         </div>
 
         <div className="pt-4 border-t border-gray-100 mt-auto">
@@ -384,19 +599,8 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
   );
 }
 
-function Badge({ icon, text }: any) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-bold border border-gray-200">
-      {icon} {text}
-    </span>
-  );
-}
-
-// ==========================================
-// 詳細ページコンポーネント
-// ==========================================
+// ★ 詳細ページコンポーネント (中略なし完全版) ★
 function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelectLesson }: any) {
-  // 単元連携の授業を取得
   const unitLessons = allLessons
     .filter((l: LessonCard) => l.unit_name === lesson.unit_name && l.target_grade === lesson.target_grade && l.unit_name !== '単元なし')
     .sort((a: any, b: any) => a.unit_order - b.unit_order);
