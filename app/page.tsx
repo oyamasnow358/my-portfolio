@@ -24,7 +24,7 @@ const MieeLApps = [
   { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "/page/page2" },
   { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%8C%87%E5%B0%8E%E6%A1%88%E4%BD%9C%E6%88%90" },
   { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "https://aspecial-education-app.onrender.com/AI%E3%81%AB%E3%82%88%E3%82%8B%E6%94%AF%E6%8F%B4,%E6%8C%87%E5%B0%8E%E8%A8%88%E7%94%BB%E4%BD%9C%E6%88%90" },
-  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "https://aspecial-education-app.onrender.com/%E7%9F%A5%E7%9A%84%E6%AE%B5%E9%9A%8E_%E6%97%A9%E5%BC%95%E3%81%8D%E5%AD%A6%E7%BF%92%E6%8C%87%E5%B0%8E%E8%A6%81%E9%A0%98" },
+  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "/page/page3" },
   { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "https://aspecial-education-app.onrender.com/%E6%8E%88%E6%A5%AD%E3%82%AB%E3%83%BC%E3%83%89%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%E3%83%BC" },
   { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "https://aspecial-education-app.onrender.com/%E5%8B%95%E7%94%BB%E3%82%AE%E3%83%A3%E3%83%A9%E3%83%AA%E3%83%BC" },
 ];
