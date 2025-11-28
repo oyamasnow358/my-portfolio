@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, Youtube, Video, ExternalLink, PlayCircle, Info, ArrowUpRight // ← これを追加しました
+  // ▼ 修正: Youtube を削除し、MonitorPlay を追加しました
+  ArrowLeft, MonitorPlay, Video, ExternalLink, PlayCircle, Info, ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
 
@@ -116,7 +117,8 @@ export default function VideoGalleryPage() {
           className="mb-12 text-center"
         >
           <div className="inline-flex items-center justify-center p-4 bg-red-50 rounded-full mb-6 text-red-600 shadow-sm">
-            <Youtube size={40} />
+            {/* ▼ 変更: Youtube -> MonitorPlay */}
+            <MonitorPlay size={40} />
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">YouTube 動画ギャラリー</h2>
           <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
