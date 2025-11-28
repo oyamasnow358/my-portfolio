@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, FileSpreadsheet, Download, ChevronDown, CheckCircle, 
-  TrendingUp, BarChart2, Info, ArrowUpRight // ★ここに ArrowUpRight を追加しました
+  TrendingUp, BarChart2, Info, ArrowUpRight
 } from "lucide-react";
 import Link from "next/link";
-import { submitChartData } from "./actions";
+// 作成したアクションをすべてインポート
+import { submitChartData, downloadExcel, getGuidelineData } from "./actions";
 
 // ==========================================
 // ▼ データ設定エリア
@@ -23,29 +24,46 @@ const OPTIONS_OVER7 = ["8〜10歳", "10〜12歳", "12～14歳", "14〜16歳", "1
 // ==========================================
 
 export default function DevelopmentChartPage() {
-  // ステート管理
   const [mode, setMode] = useState<"under7" | "over7">("under7");
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  
+  // 状態管理
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState(""); // 作成されたURL
+  const [guidelines, setGuidelines] = useState<Record<string, Record<number, string>>>({}); // 目安データ
 
-  // 現在のモードに応じたデータ
   const categories = mode === "under7" ? CATEGORIES_UNDER7 : CATEGORIES_OVER7;
   const options = mode === "under7" ? OPTIONS_UNDER7 : OPTIONS_OVER7;
 
-  // ハンドラー
+  // --- 1. 初回ロード時 & モード変更時に「目安データ」を取得 ---
+  useEffect(() => {
+    async function loadGuidelines() {
+      const result = await getGuidelineData(mode);
+      if (result.success && result.data) {
+        setGuidelines(result.data);
+      }
+    }
+    loadGuidelines();
+    
+    // モードが変わったら状態リセット
+    setAnswers({});
+    setIsComplete(false);
+    setSpreadsheetUrl("");
+  }, [mode]);
+
+  // --- ハンドラー ---
   const handleOptionSelect = (category: string, option: string) => {
     setAnswers(prev => ({ ...prev, [category]: option }));
   };
 
+  // チャート作成・書き込み
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
     try {
-      // Server Actionを呼び出す
       const result = await submitChartData(mode, answers);
-      
-      if (result.success) {
+      if (result.success && result.url) {
+        setSpreadsheetUrl(result.url); // URLを保存
         setIsComplete(true);
       } else {
         alert("エラーが発生しました: " + result.error);
@@ -54,6 +72,33 @@ export default function DevelopmentChartPage() {
       alert("通信エラーが発生しました。");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Excelダウンロード
+  const handleDownload = async () => {
+    const fileName = `hattatsu_chart_${mode}.xlsx`;
+    try {
+      const result = await downloadExcel(mode);
+      if (result.success && result.data) {
+        // Base64からBlobを作成してダウンロード発火
+        const byteCharacters = atob(result.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+      } else {
+        alert("ダウンロードに失敗しました: " + result.error);
+      }
+    } catch (e) {
+      alert("ダウンロード中にエラーが発生しました。");
     }
   };
 
@@ -83,7 +128,7 @@ export default function DevelopmentChartPage() {
       {/* メインコンテンツ */}
       <main className="relative z-10 pt-32 pb-20 px-6 md:px-20 max-w-7xl mx-auto">
         
-        {/* タイトルエリア */}
+        {/* タイトル */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,7 +152,7 @@ export default function DevelopmentChartPage() {
           className="flex justify-center gap-4 mb-12"
         >
           <button
-            onClick={() => { setMode("under7"); setAnswers({}); setIsComplete(false); }}
+            onClick={() => setMode("under7")}
             className={`
               px-8 py-3 rounded-full font-bold transition-all shadow-sm
               ${mode === "under7" 
@@ -118,7 +163,7 @@ export default function DevelopmentChartPage() {
             発達年齢 7歳以下用
           </button>
           <button
-            onClick={() => { setMode("over7"); setAnswers({}); setIsComplete(false); }}
+            onClick={() => setMode("over7")}
             className={`
               px-8 py-3 rounded-full font-bold transition-all shadow-sm
               ${mode === "over7" 
@@ -130,7 +175,7 @@ export default function DevelopmentChartPage() {
           </button>
         </motion.div>
 
-        {/* 入力フォームエリア */}
+        {/* 入力フォーム */}
         {!isComplete ? (
           <motion.div 
             initial={{ opacity: 0 }}
@@ -148,9 +193,9 @@ export default function DevelopmentChartPage() {
               >
                 <h3 className="font-bold text-lg mb-4 text-slate-800 border-b border-gray-100 pb-2">{category}</h3>
                 
-                {/* 選択肢 (ラジオボタン風) */}
+                {/* 選択肢 */}
                 <div className="space-y-2">
-                  {options.map((option) => (
+                  {options.map((option, idx) => (
                     <button
                       key={option}
                       onClick={() => handleOptionSelect(category, option)}
@@ -167,15 +212,27 @@ export default function DevelopmentChartPage() {
                   ))}
                 </div>
 
-                {/* 目安を見る (アコーディオン) */}
+                {/* ★修正: 目安を見る (データ表示機能追加) */}
                 <details className="mt-4 group">
                   <summary className="flex items-center gap-2 text-xs font-bold text-gray-400 cursor-pointer hover:text-blue-500 transition-colors list-none">
                     <Info size={14} /> 目安を見る
                     <ChevronDown size={14} className="group-open:rotate-180 transition-transform" />
                   </summary>
-                  <div className="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg leading-relaxed">
-                    {/* ★本来はここに詳細データを表示 */}
-                    各年齢段階における具体的な行動指標が表示されます。
+                  <div className="mt-3 bg-gray-50 p-4 rounded-lg border border-gray-100 text-xs leading-relaxed text-gray-600">
+                    {/* ここでGoogle Sheetsから取得したguidelinesを表示 */}
+                    {options.map((opt, idx) => {
+                      const step = idx + 1; // 1, 2, 3...
+                      // ガイドラインデータがあれば表示、なければ「データなし」
+                      const text = guidelines[category] ? guidelines[category][step] : null;
+                      
+                      return text ? (
+                        <div key={opt} className="mb-2 last:mb-0">
+                          <span className="font-bold text-blue-600 mr-2">{opt}:</span>
+                          {text}
+                        </div>
+                      ) : null;
+                    })}
+                    {(!guidelines[category]) && <p>データを読み込んでいます...</p>}
                   </div>
                 </details>
               </motion.div>
@@ -195,11 +252,22 @@ export default function DevelopmentChartPage() {
             <p className="text-green-700 mb-8">データが正常に処理されました。以下のボタンから確認・保存してください。</p>
             
             <div className="flex justify-center gap-4 flex-wrap">
-              <button className="flex items-center gap-2 px-8 py-4 bg-white border border-green-200 text-green-700 rounded-xl font-bold hover:bg-green-100 transition-colors shadow-sm">
+              {/* スプレッドシートボタン */}
+              <a 
+                href={spreadsheetUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-8 py-4 bg-white border border-green-200 text-green-700 rounded-xl font-bold hover:bg-green-100 transition-colors shadow-sm"
+              >
                 <FileSpreadsheet size={20} />
                 スプレッドシートで確認
-              </button>
-              <button className="flex items-center gap-2 px-8 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors shadow-lg hover:shadow-green-500/30">
+              </a>
+              
+              {/* ダウンロードボタン */}
+              <button 
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-8 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors shadow-lg hover:shadow-green-500/30"
+              >
                 <Download size={20} />
                 Excel形式でダウンロード
               </button>
