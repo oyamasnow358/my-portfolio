@@ -214,7 +214,7 @@ export default function LessonLibraryPage() {
             教科やタグで絞り込んで、明日の授業のヒントを見つけましょう。
           </p>
           
-          <a href="https://leeson-abfy5bxayhavhoznzexj8r.streamlit.app/" target="_blank" rel="noopener noreferrer"
+          <a href="/page/page8" target="_blank" rel="noopener noreferrer"
              className="inline-flex items-center gap-2 mt-6 px-8 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm">
              <span>📝</span> 授業カードを作成する (Googleフォーム)
           </a>
