@@ -5,22 +5,26 @@ import {
   ArrowLeft, Search, Layers, Clock, GraduationCap, Video, FileText, 
   ChevronDown, ChevronUp, Download, Tag, BookOpen, Image as ImageIcon,
   ArrowUpRight, CheckCircle, User, Cpu, LineChart, Table, FileSpreadsheet,
-  ChevronLeft, ChevronRight, ExternalLink, RefreshCw, Upload
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse"; 
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-// サーバーアクション (先に作成したものをインポート)
-import { getFormResponses } from "@/app/actions/getSheetsData";
-
 // ==========================================
 // 定数・設定
 // ==========================================
-const CSV_PATH = "/lesson_cards.csv"; 
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdqRDY5cr5wdSR8nYKmc8pyD7wzVgKli21mLUg7ECtpVLm1iw/viewform";
+const CSV_PATH = "/lesson_cards.csv"; // ライブラリ用CSV
+const LOGO_PATH = "/MieeL2.png";
 const ITEMS_PER_PAGE = 12;
+
+// ★ Googleスプレッドシートの「Webに公開」CSVリンク
+// ※ここに実際のCSVリンクを入れてください。
+const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxxxxxxxx/pub?output=csv"; 
+
+// GoogleフォームのURL
+const GOOGLE_FORM_URL = "https://leeson-abfy5bxayhavhoznzexj8r.streamlit.app/";
 
 type LessonCard = {
   id: string;
@@ -71,7 +75,6 @@ export default function LessonLibraryPage() {
   const [sheetData, setSheetData] = useState<any[]>([]);
   const [sheetLoading, setSheetLoading] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<string>("");
-  const [templateFile, setTemplateFile] = useState<File | null>(null);
 
   // ==========================================
   // データ読み込み (ライブラリ用CSV)
@@ -131,37 +134,53 @@ export default function LessonLibraryPage() {
   }, []);
 
   // ==========================================
-  // Generator機能: サーバーアクション経由で読み込み
+  // Generator機能: スプレッドシート読み込み & Excel生成
   // ==========================================
-  const handleLoadSheetData = async () => {
+  const loadGoogleSheet = async () => {
     setSheetLoading(true);
     try {
-      const data = await getFormResponses();
-      setSheetData(data);
-      alert(`${data.length}件の回答データを取得しました。`);
-    } catch (e: any) {
+      // 公開CSVからデータを取得
+      const response = await fetch(GOOGLE_SHEET_CSV_URL);
+      if (!response.ok) throw new Error("スプレッドシートの読み込みに失敗しました。URLを確認してください。");
+      
+      const csvText = await response.text();
+      
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          setSheetData(results.data);
+          alert(`${results.data.length}件の回答を読み込みました！`);
+        }
+      });
+    } catch (e) {
       console.error(e);
-      alert(`エラー: ${e.message}`);
+      alert("読み込みエラー: スプレッドシートの公開URLが正しく設定されていません。");
     } finally {
       setSheetLoading(false);
     }
   };
 
-  const handleGenerateExcel = async () => {
-    if (!templateFile) return alert("テンプレートファイル（授業カード.xlsm）をアップロードしてください。");
+  const generateExcel = async () => {
     if (!selectedRowIndex) return alert("出力するデータを選択してください。");
-
+    
     const rowData = sheetData[Number(selectedRowIndex)];
     if (!rowData) return;
 
     try {
-      const arrayBuffer = await templateFile.arrayBuffer();
+      // テンプレート読み込み
+      const response = await fetch("/授業カード.xlsm");
+      if (!response.ok) throw new Error("テンプレートファイル(授業カード.xlsm)が見つかりません。publicフォルダに配置してください。");
+      
+      const arrayBuffer = await response.arrayBuffer();
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(arrayBuffer);
       
+      // シート取得
       const ws = workbook.getWorksheet("授業カード");
       if (!ws) throw new Error("シート「授業カード」が見つかりません。");
 
+      // マッピング定義 (フォームの項目名 -> セル番地)
       const mapping: Record<string, string> = {
         '知的段階及び発達段階': 'B2',
         '単元名': 'B3',
@@ -183,22 +202,19 @@ export default function LessonLibraryPage() {
         '単元内で何回目の授業か': 'B8',
       };
 
+      // 書き込み
       Object.keys(mapping).forEach(key => {
         const cellAddr = mapping[key];
         let val = rowData[key] || "";
-        if (['導入の内容', '展開の内容', 'まとめの内容', '授業のPOINT'].includes(key)) {
-             val = val.replace(/;/g, "\n");
-        }
         ws.getCell(cellAddr).value = val;
       });
 
+      // ダウンロード
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.ms-excel.sheet.macroEnabled.12" });
-      const unitName = rowData['単元名'] || '授業カード';
-      const timestamp = rowData['タイムスタンプ'] ? rowData['タイムスタンプ'].split(' ')[0].replace(/\//g, '') : 'date';
-      const filename = `${unitName}_授業カード_${timestamp}.xlsm`;
-      
+      const filename = `${rowData['単元名'] || '授業カード'}.xlsm`;
       saveAs(blob, filename);
+      
       alert("Excelファイルを作成しました！");
 
     } catch (e: any) {
@@ -234,10 +250,13 @@ export default function LessonLibraryPage() {
     setCurrentPage(1);
   };
 
+  // ページ番号配列を生成する関数
   const getPageNumbers = (current: number, total: number) => {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    
     if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
     if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    
     return [1, '...', current - 1, current, current + 1, '...', total];
   };
 
@@ -252,10 +271,7 @@ export default function LessonLibraryPage() {
         showFlow={showFlow}
         setShowFlow={setShowFlow}
         allLessons={lessons}
-        onSelectLesson={(l: LessonCard) => {
-            setSelectedLesson(l);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onSelectLesson={setSelectedLesson}
       />
     );
   }
@@ -398,9 +414,10 @@ export default function LessonLibraryPage() {
                 </div>
               )}
 
-              {/* ページネーション */}
+              {/* ★★★ 数字付きページネーション ★★★ */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-12">
+                  {/* 前へボタン */}
                   <button 
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
@@ -409,6 +426,7 @@ export default function LessonLibraryPage() {
                     <ChevronLeft size={18} />
                   </button>
 
+                  {/* 数字ボタン */}
                   {getPageNumbers(currentPage, totalPages).map((p, i) => (
                     typeof p === 'number' ? (
                       <button
@@ -428,6 +446,7 @@ export default function LessonLibraryPage() {
                     )
                   ))}
 
+                  {/* 次へボタン */}
                   <button 
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
@@ -437,6 +456,7 @@ export default function LessonLibraryPage() {
                   </button>
                 </div>
               )}
+
             </motion.div>
           )}
 
@@ -467,7 +487,7 @@ export default function LessonLibraryPage() {
                   <h4 className="text-lg font-bold text-emerald-800 mb-2">1. データを入力する</h4>
                   <a href={GOOGLE_FORM_URL} target="_blank" rel="noopener noreferrer" 
                      className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-emerald-600 text-emerald-600 rounded-full font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
-                     <ExternalLink size={18} /> Googleフォームを開く
+                     <FileText size={18} /> Googleフォームを開く
                   </a>
                 </div>
 
@@ -475,61 +495,41 @@ export default function LessonLibraryPage() {
                 <div>
                   <h4 className="text-lg font-bold text-emerald-800 mb-2">2. 回答データを読み込む</h4>
                   <button 
-                    onClick={handleLoadSheetData}
+                    onClick={loadGoogleSheet}
                     disabled={sheetLoading}
                     className="w-full md:w-auto px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {sheetLoading ? <RefreshCw className="animate-spin"/> : <Download size={18} />}
-                    {sheetLoading ? "読み込み中..." : "最新の回答を取得"}
+                    {sheetLoading ? "読み込み中..." : "🔄 最新の回答を取得"}
                   </button>
-                  <p className="text-xs text-emerald-600 mt-2 font-bold bg-emerald-100 p-2 rounded-lg inline-block">
-                    ※ API認証を使用し、指定されたスプレッドシートからデータを取得します。
-                  </p>
                 </div>
 
                 {/* 3. 選択してダウンロード */}
                 {sheetData.length > 0 && (
-                  <div className="pt-6 border-t border-emerald-200">
+                  <div className="pt-4 border-t border-emerald-100">
                     <h4 className="text-lg font-bold text-emerald-800 mb-4">3. 出力するデータを選択</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-xs font-bold text-emerald-700 mb-2">出力するデータを選択</label>
-                        <select 
-                          value={selectedRowIndex}
-                          onChange={(e) => setSelectedRowIndex(e.target.value)}
-                          className="w-full p-3 bg-white border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
-                        >
-                          <option value="">選択してください</option>
-                          {sheetData.map((row: any, i: number) => (
-                            <option key={i} value={i}>
-                              [{row['タイムスタンプ']}] {row['単元名']} ({row['授業者'] || '名前なし'})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-emerald-700 mb-2">テンプレートを選択 (授業カード.xlsm)</label>
-                        <div className="relative">
-                          <input 
-                            type="file" 
-                            accept=".xlsm, .xlsx"
-                            onChange={(e) => setTemplateFile(e.target.files?.[0] || null)}
-                            className="w-full p-2 bg-white border border-emerald-300 rounded-xl text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                          />
-                          <Upload className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none" size={18} />
-                        </div>
-                        <p className="text-[10px] text-emerald-600 mt-1 ml-1">※ 手元の「授業カード.xlsm」を選択してください。</p>
-                      </div>
-                    </div>
+                    <select 
+                      value={selectedRowIndex}
+                      onChange={(e) => setSelectedRowIndex(e.target.value)}
+                      className="w-full p-4 bg-white border-2 border-emerald-200 rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-900 mb-4"
+                    >
+                      <option value="">▼ 選択してください</option>
+                      {sheetData.map((row: any, i: number) => (
+                        <option key={i} value={i}>
+                          [{row['タイムスタンプ']}] {row['単元名']} - {row['授業タイトル'] || 'タイトルなし'}
+                        </option>
+                      ))}
+                    </select>
 
                     <button 
-                      onClick={handleGenerateExcel}
-                      disabled={!selectedRowIndex || !templateFile}
-                      className="w-full mt-6 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                      onClick={generateExcel}
+                      disabled={!selectedRowIndex}
+                      className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                     >
-                      <FileSpreadsheet size={20} /> Excelを作成してダウンロード
+                      <Download size={24} /> Excelを作成してダウンロード
                     </button>
+                    <p className="text-xs text-emerald-600 mt-2 text-center font-bold">
+                      ※ publicフォルダに「授業カード.xlsm」が必要です。
+                    </p>
                   </div>
                 )}
               </div>
@@ -599,7 +599,7 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
   );
 }
 
-// 詳細ページコンポーネント
+// ★ 詳細ページコンポーネント (中略なし完全版) ★
 function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelectLesson }: any) {
   const unitLessons = allLessons
     .filter((l: LessonCard) => l.unit_name === lesson.unit_name && l.target_grade === lesson.target_grade && l.unit_name !== '単元なし')
@@ -607,12 +607,19 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
 
   return (
     <div className="min-h-screen bg-white pb-20">
+      {/* 詳細ヘッダー */}
       <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-colors"><ArrowLeft size={20} /> 一覧に戻る</button>
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 text-slate-600 hover:text-blue-600 font-bold transition-colors"
+        >
+          <ArrowLeft size={20} /> 一覧に戻る
+        </button>
         <h1 className="text-sm font-bold text-gray-400">DETAIL VIEW</h1>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-12">
+        {/* タイトルエリア */}
         <div className="mb-8 pb-8 border-b border-gray-200">
           <div className="flex gap-3 mb-4">
             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">{lesson.subject}</span>
@@ -622,6 +629,7 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           <p className="text-xl text-gray-500 font-bold">{lesson.catch_copy}</p>
         </div>
 
+        {/* メイン画像 */}
         <div className="rounded-3xl overflow-hidden shadow-lg mb-12 border border-gray-100">
           <img 
             src={lesson.image || "https://placehold.co/1200x600/f1f5f9/94a3b8?text=No+Image"} 
@@ -630,6 +638,7 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           />
         </div>
 
+        {/* 基本情報グリッド */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <InfoCard label="対象" value={lesson.target_grade} icon={<GraduationCap />} />
           <InfoCard label="時間" value={lesson.duration} icon={<Clock />} />
@@ -639,6 +648,7 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           <InfoCard label="ICT活用" value={lesson.ict_use} icon={<Cpu />} />
         </div>
 
+        {/* ねらい & ポイント */}
         <div className="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 mb-12">
           <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
             <CheckCircle size={24} className="text-blue-500"/> ねらい
@@ -657,15 +667,26 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           </div>
         </div>
 
+        {/* 授業の流れ (アコーディオン) */}
         <div className="border border-gray-200 rounded-2xl overflow-hidden mb-12 shadow-sm">
-          <button onClick={() => setShowFlow(!showFlow)} className="w-full p-6 bg-gray-50 flex justify-between items-center hover:bg-gray-100 transition-colors">
-            <span className="text-lg font-bold text-slate-900 flex items-center gap-3"><Clock className="text-gray-400" /> 授業の流れ</span>
+          <button 
+            onClick={() => setShowFlow(!showFlow)}
+            className="w-full p-6 bg-gray-50 flex justify-between items-center hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-lg font-bold text-slate-900 flex items-center gap-3">
+              <Clock className="text-gray-400" /> 授業の流れ
+            </span>
             {showFlow ? <ChevronUp /> : <ChevronDown />}
           </button>
           
           <AnimatePresence>
             {showFlow && (
-              <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="bg-white border-t border-gray-200">
+              <motion.div 
+                initial={{ height: 0 }} 
+                animate={{ height: "auto" }} 
+                exit={{ height: 0 }}
+                className="bg-white border-t border-gray-200"
+              >
                 <div className="p-8 space-y-8">
                   <FlowSection title="🚀 導入" items={lesson.introduction_flow} color="blue" />
                   <FlowSection title="💡 展開" items={lesson.activity_flow} color="green" />
@@ -676,13 +697,27 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           </AnimatePresence>
         </div>
 
+        {/* 単元連携 */}
         {unitLessons.length > 1 && (
           <div className="mb-12">
-            <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Layers size={24} className="text-gray-400"/> この単元の授業</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Layers size={24} className="text-gray-400"/> この単元の授業
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {unitLessons.map((l: LessonCard) => (
-                <button key={l.id} onClick={() => onSelectLesson(l)} className={`p-4 rounded-xl border-2 text-left transition-all ${l.id === lesson.id ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}`}>
-                  <span className="block text-xs font-bold opacity-70 mb-1">{l.id === lesson.id ? "● 表示中" : `Lesson ${l.unit_order}`}</span>
+                <button
+                  key={l.id}
+                  onClick={() => onSelectLesson(l)}
+                  className={`
+                    p-4 rounded-xl border-2 text-left transition-all
+                    ${l.id === lesson.id 
+                      ? "border-blue-500 bg-blue-50 text-blue-900" 
+                      : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}
+                  `}
+                >
+                  <span className="block text-xs font-bold opacity-70 mb-1">
+                    {l.id === lesson.id ? "● 表示中" : `Lesson ${l.unit_order}`}
+                  </span>
                   <span className="font-bold block truncate">{l.unit_lesson_title || l.unit_name}</span>
                 </button>
               ))}
@@ -690,17 +725,28 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
           </div>
         )}
 
+        {/* 動画 */}
         {lesson.video_link && (
           <div className="mb-12">
-            <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Video size={24} className="text-red-500"/> 授業動画</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Video size={24} className="text-red-500"/> 授業動画
+            </h3>
             <div className="aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
-              <iframe src={lesson.video_link.replace("watch?v=", "embed/")} className="w-full h-full" allowFullScreen />
+              {/* YouTube埋め込みなど（URLからID抽出が必要な場合は別途処理） */}
+              <iframe 
+                src={lesson.video_link.replace("watch?v=", "embed/")} 
+                className="w-full h-full" 
+                allowFullScreen 
+              />
             </div>
           </div>
         )}
 
+        {/* ダウンロードエリア */}
         <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 shadow-2xl">
-          <h3 className="text-2xl font-bold mb-8 flex items-center gap-3"><Download size={32} className="text-blue-400"/> 資料ダウンロード</h3>
+          <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
+            <Download size={32} className="text-blue-400"/> 資料ダウンロード
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DownloadBtn href={lesson.detail_word_url} label="指導案 (Word)" color="blue" icon={<FileText/>} />
             <DownloadBtn href={lesson.detail_pdf_url} label="指導案 (PDF)" color="red" icon={<FileText/>} />
@@ -714,28 +760,66 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
   );
 }
 
+// --- 詳細用部品 ---
 function InfoCard({ label, value, icon }: any) {
   return (
     <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl flex items-center gap-4">
-      <div className="p-3 bg-white rounded-full text-gray-400 shadow-sm border border-gray-100">{icon}</div>
-      <div><div className="text-xs font-bold text-gray-400 uppercase">{label}</div><div className="font-bold text-slate-900">{value}</div></div>
+      <div className="p-3 bg-white rounded-full text-gray-400 shadow-sm border border-gray-100">
+        {icon}
+      </div>
+      <div>
+        <div className="text-xs font-bold text-gray-400 uppercase">{label}</div>
+        <div className="font-bold text-slate-900">{value}</div>
+      </div>
     </div>
   );
 }
 
 function FlowSection({ title, items, color }: any) {
-  const colors: any = { blue: "bg-blue-50 text-blue-900 border-blue-200", green: "bg-green-50 text-green-900 border-green-200", orange: "bg-orange-50 text-orange-900 border-orange-200" };
+  const colors: any = {
+    blue: "bg-blue-50 text-blue-900 border-blue-200",
+    green: "bg-green-50 text-green-900 border-green-200",
+    orange: "bg-orange-50 text-orange-900 border-orange-200",
+  };
+  
   if (!items || items.length === 0) return null;
+
   return (
     <div className={`p-6 rounded-xl border ${colors[color]}`}>
       <h4 className="font-bold text-lg mb-4">{title}</h4>
-      <ul className="space-y-3">{items.map((item: string, i: number) => <li key={i} className="flex gap-3"><span className="font-bold opacity-50">{i + 1}.</span>{item}</li>)}</ul>
+      <ul className="space-y-3">
+        {items.map((item: string, i: number) => (
+          <li key={i} className="flex gap-3">
+            <span className="font-bold opacity-50">{i + 1}.</span>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
 function DownloadBtn({ href, label, color, icon }: any) {
   if (!href) return null;
-  const colors: any = { blue: "bg-blue-600 hover:bg-blue-500", red: "bg-red-600 hover:bg-red-500", orange: "bg-orange-600 hover:bg-orange-500", green: "bg-emerald-600 hover:bg-emerald-500" };
-  return <a href={href} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center gap-3 p-5 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 ${colors[color]}`}>{icon} {label}</a>;
+  
+  const colors: any = {
+    blue: "bg-blue-600 hover:bg-blue-500",
+    red: "bg-red-600 hover:bg-red-500",
+    orange: "bg-orange-600 hover:bg-orange-500",
+    green: "bg-emerald-600 hover:bg-emerald-500",
+  };
+
+  return (
+    <a 
+      href={href} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className={`
+        flex items-center justify-center gap-3 p-5 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1
+        ${colors[color]}
+      `}
+    >
+      {icon} {label}
+    </a>
+  );
 }
