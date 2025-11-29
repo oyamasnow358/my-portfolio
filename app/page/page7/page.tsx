@@ -13,7 +13,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 // サーバーアクション (先に作成したものをインポート)
-import { getFormResponses } from "@/app/actions/getSheetsData";
+// import { getFormResponses } from "@/app/actions/getSheetsData";
 
 // ==========================================
 // 定数・設定
@@ -134,18 +134,25 @@ export default function LessonLibraryPage() {
   // Generator機能: サーバーアクション経由で読み込み
   // ==========================================
   const handleLoadSheetData = async () => {
-    setSheetLoading(true);
-    try {
-      const data = await getFormResponses();
-      setSheetData(data);
-      alert(`${data.length}件の回答データを取得しました。`);
-    } catch (e: any) {
-      console.error(e);
-      alert(`エラー: ${e.message}`);
-    } finally {
-      setSheetLoading(false);
+  setSheetLoading(true);
+  try {
+    // 作成したAPIルートを呼び出す
+    const response = await fetch("/api/sheets");
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "データの取得に失敗しました");
     }
-  };
+
+    setSheetData(result.data);
+    alert(`${result.data.length}件の回答データを取得しました。`);
+  } catch (e: any) {
+    console.error(e);
+    alert(`エラー: ${e.message}`);
+  } finally {
+    setSheetLoading(false);
+  }
+};
 
   const handleGenerateExcel = async () => {
     if (!templateFile) return alert("テンプレートファイル（授業カード.xlsm）をアップロードしてください。");
