@@ -3,18 +3,29 @@ import { google } from "googleapis";
 
 export async function getFormResponses() {
   try {
-    // 1. 環境変数のチェック (GOOGLE_PRIVATE_KEY2 を使用)
+    // 1. 環境変数の取得
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const privateKeyRaw = process.env.GOOGLE_PRIVATE_KEY2; // ← ここを変更しました
     const projectId = process.env.GOOGLE_PROJECT_ID;
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+    
+    // 鍵は KEY2 がなければ KEY を見るようにする
+    let privateKeyRaw = process.env.GOOGLE_PRIVATE_KEY2 || process.env.GOOGLE_PRIVATE_KEY;
 
     if (!clientEmail || !privateKeyRaw || !projectId || !spreadsheetId) {
-      throw new Error("環境変数が設定されていません。Vercelの設定を確認してください。");
+      console.error("Missing Env Vars:", { 
+        email: !!clientEmail, 
+        key: !!privateKeyRaw, 
+        project: !!projectId, 
+        sheet: !!spreadsheetId 
+      });
+      throw new Error("環境変数が不足しています。Vercelの設定を確認してください。");
     }
 
-    // 2. 秘密鍵の整形
-    const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
+    // 2. 秘密鍵の整形 (ここを強化)
+    // 文字列としての "\n" を本当の改行コードに変換し、前後の余白を削除
+    const privateKey = privateKeyRaw.split(String.raw`\n`).join('\n').trim();
+
+    console.log(`Attempting to auth with email: ${clientEmail}`);
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -27,6 +38,7 @@ export async function getFormResponses() {
 
     const sheets = google.sheets({ version: "v4", auth });
     
+    // 範囲指定
     const range = "フォームの回答 1!A1:Z1000";
 
     const response = await sheets.spreadsheets.values.get({
@@ -48,7 +60,12 @@ export async function getFormResponses() {
 
     return data;
   } catch (error: any) {
-    console.error("Sheet API Error Detail:", error);
+    // エラー内容を詳細にログ出力
+    console.error("Sheet API Error Details:", JSON.stringify(error, null, 2));
+    
+    if (error.message.includes('invalid_grant')) {
+      throw new Error("認証に失敗しました。秘密鍵またはメールアドレスが間違っています。");
+    }
     throw new Error(`データの取得に失敗しました: ${error.message}`);
   }
 }
