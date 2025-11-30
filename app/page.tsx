@@ -1,25 +1,26 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+// ▼ Linkアイコン(lucide)と競合しないよう、アイコンのインポートからLinkを除外しています
 import { 
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, Video, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
   Brain, LineChart, Sparkles, Users
 } from "lucide-react";
+// ▼ Next.jsのリンクコンポーネント
+import Link from "next/link";
 
 // ==========================================
-// ▼ データ設定エリア
+// ▼ データ設定エリア (省略なし)
 // ==========================================
-
 
 const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用（オープニング）
 const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用（メイン画面）
 
-// 1. MieeLアプリ一覧
-const MieeLApps = [
+// 1. MieeL 各機能 (内部リンクに変更)
+const mieelApps = [
   { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
-  // ★変更箇所: 内部ページへのリンクに変更
   { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "/page/page1" },
   { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "/page/page2" },
   { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "/page/page5" },
@@ -27,19 +28,11 @@ const MieeLApps = [
   { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "/page/page3" },
   { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "/page/page7" },
   { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "/page/page6" },
+  // ★追加: 研究・分析
+  { id: "08", title: "研究・分析", en: "ANALYSIS & TOOLS", href: "/page/page9" },
 ];
 
-// 2. 分析ツール一覧
-const analysisTools = [
-  { jp: "応用行動分析", en: "Applied Behavior Analysis (ABA)", href: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamlit.app/" },
-  { jp: "機能的行動評価", en: "Functional Behavior Assessment", href: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/" },
-  { jp: "アンケート統計分析", en: "Survey Statistical Analysis", href: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" },
-  { jp: "多変量回帰分析", en: "Multivariate Regression", href: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" },
-  { jp: "t検定・統計ツール", en: "T-Test & Statistical Tools", href: "https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" },
-  { jp: "ノンパラメトリック分析", en: "Non-Parametric Analysis", href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" },
-];
-
-// 3. マニュアルデータ
+// 2. マニュアルデータ
 const manuals = [
   {
     title: "指導支援内容 マニュアル",
@@ -58,7 +51,7 @@ const manuals = [
   },
 ];
 
-// 4. つながり (Network)
+// 3. つながり (Network)
 const networkData = [
   { name: "IT Teacher A", role: "High School Info Dept.", desc: "Network Specialist" },
   { name: "IT Teacher B", role: "Special Ed. Coordinator", desc: "iPad Utilization" },
@@ -75,6 +68,9 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
+  // フィードバック用のタブ状態 (ms = Microsoft, google = Google)
+  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
+
   useEffect(() => {
     const timer1 = setTimeout(() => setOpPhase(1), 2000);
     const timer2 = setTimeout(() => setOpPhase(2), 4500);
@@ -90,13 +86,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-black selection:text-white overflow-hidden relative">
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black overflow-hidden relative">
       
       {/* オープニングアニメーション */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
-            className="fixed inset-0 z-[100] bg-black text-white flex flex-col items-center justify-center px-6"
+            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center px-6"
             exit={{ opacity: 0, transition: { duration: 1.5, ease: "easeInOut" } }}
           >
             {opPhase === 0 && (
@@ -126,23 +122,23 @@ export default function Home() {
       </AnimatePresence>
 
       {/* 背景パララックス */}
-      <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
+      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
-        <div className="absolute inset-0 bg-white/20" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* 固定ヘッダー */}
-      <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none">
-        <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
-          <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
-            MieeL <span className="text-gray-500">v2.0</span>
+      <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none transition-all duration-500">
+        <div className="pointer-events-auto bg-black/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/5 hover:border-white/20 transition-all">
+          <h1 className="text-xs font-bold tracking-widest flex items-center gap-3">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_#3b82f6]"></div>
+            MieeL <span className="text-gray-600">v2.0</span>
           </h1>
         </div>
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
-          <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} color="blue" />
-          <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} color="purple" />
-          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} color="emerald" />
+          <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} />
+          <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} />
+          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} />
         </nav>
       </header>
 
@@ -152,24 +148,24 @@ export default function Home() {
         {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
-             <motion.img 
-               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 5, duration: 1.5 }}
+             {/* 白背景用ロゴを表示する箇所ですが、ダークモードTOPなので白文字が映えるロゴが良いでしょう */}
+             <img 
                src={LOGO_MAIN_PATH} alt="MieeL Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain"
              />
            </motion.div>
            
-           <div className="space-y-4 mb-20 text-black">
+           <div className="space-y-4 mb-20">
              <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.0 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">SPECIAL</motion.h2></div>
              <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.1 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">EDUCATION</motion.h2></div>
-             <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.2 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-400">SUPPORT.</motion.h2></div>
+             <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.2 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-600">SUPPORT.</motion.h2></div>
            </div>
 
            <motion.div 
              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.5, delay: 5.5 }}
-             className="border-l-2 border-black/10 pl-8 ml-2 max-w-2xl"
+             className="border-l border-white/20 pl-8 ml-2 max-w-2xl"
            >
-             <p className="text-slate-900 text-xl md:text-2xl tracking-wide font-light mb-6">Data-Driven Education.</p>
-             <p className="text-gray-700 text-sm md:text-base leading-loose">
+             <p className="text-white text-xl md:text-2xl tracking-wide font-light mb-6">Data-Driven Education.</p>
+             <p className="text-gray-400 font-light text-sm md:text-base leading-loose">
                指導案作成から統計分析までを一元化したプラットフォーム。
              </p>
            </motion.div>
@@ -178,12 +174,13 @@ export default function Home() {
         {/* 2. コンセプト */}
         <section className="px-6 md:px-20 mb-40">
           <ScrollReveal>
-            <div className="border-t border-gray-200 pt-32">
-              <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl text-black">
+            <div className="border-t border-white/10 pt-32">
+              <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl">
                 MieeLは、特別支援教育の現場における<br className="hidden md:block"/>
-                <span className="text-blue-600">「経験」</span>や<span className="text-blue-600">「勘」</span>に、
-                データという新たな<span className="text-blue-600">「根拠」</span>をプラスします。
+                <span className="text-blue-500">「経験」</span>や<span className="text-blue-500">「勘」</span>に、
+                データという新たな<span className="text-blue-500">「根拠」</span>をプラスします。
               </h3>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24">
                  <FeatureItem icon={<Brain size={48} />} title="AI Assistant" desc="指導案や支援計画の作成をAIがサポート。事務作業時間を大幅に短縮し、子どもと向き合う時間を創出します。" />
                  <FeatureItem icon={<LineChart size={48} />} title="Visualization" desc="発達検査の結果や行動記録をチャートで見える化。直感的に状況を把握し、チームでの共有を円滑にします。" />
@@ -193,47 +190,42 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー */}
+        {/* 3. メインメニュー (名称変更: MieeL 各機能) */}
         <section className="px-6 md:px-20 mb-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             <MenuCard title="MieeL アプリ" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
-             <MenuCard title="アプリマニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
-             <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
-             <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
-             <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
+             <StaggeredMenu>
+                <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
+                <MenuCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
+                <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
+                <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
+                <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
+             </StaggeredMenu>
           </div>
         </section>
 
         {/* 4. フッター */}
-        <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
-            <LargeFooterBtn 
-              title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} 
-              onClick={() => setSelectedPage('profile')} color="blue" delay={0.1}
-            />
-            <LargeFooterBtn 
-              title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={32}/>} 
-              onClick={() => setSelectedPage('feedback')} color="emerald" delay={0.2}
-            />
-            <LargeFooterBtn 
-              title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} 
-              onClick={() => setSelectedPage('system')} color="purple" delay={0.3}
-            />
-            <LargeFooterBtn 
-              title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} 
-              onClick={() => setSelectedPage('terms')} color="slate" delay={0.4}
-            />
+        <footer className="bg-neutral-950 border-t border-white/5 pt-32 pb-20 px-6 md:px-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-32 max-w-6xl mx-auto">
+            <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
+            <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={() => setSelectedPage('feedback')} />
+            <FooterLink title="SYSTEM" icon={<Cpu size={16}/>} onClick={() => setSelectedPage('system')} />
+            <FooterLink title="TERMS OF USE" icon={<FileText size={16}/>} onClick={() => setSelectedPage('terms')} />
           </div>
-          <div className="text-center text-gray-500 text-xs tracking-widest">
+          <div className="text-center text-gray-700 text-xs tracking-widest">
             &copy; 2025 MieeL Project. All Rights Reserved.
           </div>
         </footer>
       </div>
 
-      {/* --- モーダル --- */}
+      {/* --- モーダル (詳細ページ) --- */}
       <AnimatePresence>
         {selectedPage && (
-          <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
+          <PageContent 
+            page={selectedPage} 
+            onClose={() => setSelectedPage(null)} 
+            feedbackTab={feedbackTab} 
+            setFeedbackTab={setFeedbackTab}
+          />
         )}
       </AnimatePresence>
 
@@ -259,110 +251,79 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
+function StaggeredMenu({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
+      variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+      className="contents"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
     <div className="group">
-      <div className="text-blue-600 mb-8 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">{icon}</div>
-      <h4 className="text-2xl font-bold mb-6 tracking-wide text-black">{title}</h4>
-      <p className="text-gray-700 leading-loose">{desc}</p>
+      <div className="text-blue-500 mb-8 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">{icon}</div>
+      <h4 className="text-2xl font-bold mb-6 tracking-wide">{title}</h4>
+      <p className="text-gray-400 leading-loose font-light">{desc}</p>
     </div>
   );
 }
 
-// メニューカード
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+  };
+
   return (
     <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
-      variants={{
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
-      }}
+      variants={cardVariants}
+      whileHover={{ backgroundColor: "#ffffff", color: "#000000", scale: 1.02 }}
+      transition={{ duration: 0.4 }}
       onClick={onClick}
-      whileHover={{ backgroundColor: "#000000", color: "#ffffff", scale: 1.02 }}
       className={`
-        bg-gray-100/50 backdrop-blur-sm border border-gray-200 p-10 md:p-14 
+        bg-white/5 backdrop-blur-sm border border-white/5 p-10 md:p-14 
         cursor-pointer group relative overflow-hidden flex flex-col justify-between
         ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-2xl
-        hover:shadow-2xl hover:border-black transition-colors duration-300
       `}
     >
       <div className="flex justify-between items-start">
-        <div className="text-gray-400 group-hover:text-white transition-colors duration-300">{icon}</div>
-        <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+        <div className="text-gray-500 group-hover:text-black transition-colors duration-500">{icon}</div>
+        <ArrowUpRight className="text-gray-500 group-hover:text-black transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        <p className="font-mono text-xs text-gray-600 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
-        <h3 className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-white">{title}</h3>
+        <p className="font-mono text-xs text-gray-500 group-hover:text-black/60 mb-3 tracking-[0.2em]">{sub}</p>
+        <h3 className="text-3xl md:text-4xl font-bold">{title}</h3>
       </div>
     </motion.div>
   );
 }
 
-// フッターボタン
-function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title: string, sub: string, icon: any, onClick: () => void, color: "blue" | "emerald" | "purple" | "slate", delay?: number }) {
-  const styles = {
-    blue: "bg-blue-100 border-blue-300 hover:border-blue-500 text-blue-900",
-    emerald: "bg-emerald-100 border-emerald-300 hover:border-emerald-500 text-emerald-900",
-    purple: "bg-purple-100 border-purple-300 hover:border-purple-500 text-purple-900",
-    slate: "bg-slate-200 border-slate-300 hover:border-slate-500 text-slate-900",
-  };
-
-  const iconColors = {
-    blue: "text-blue-500 group-hover:text-blue-700",
-    emerald: "text-emerald-500 group-hover:text-emerald-700",
-    purple: "text-purple-500 group-hover:text-purple-700",
-    slate: "text-slate-500 group-hover:text-slate-700",
-  };
-
+function FooterLink({ title, icon, onClick }: { title: string, icon: any, onClick: () => void }) {
   return (
-    <motion.button 
-      onClick={onClick}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.02, backgroundColor: "#ffffff" }}
-      whileTap={{ scale: 0.98 }}
-      className={`
-        flex items-center gap-6 p-8 w-full text-left 
-        border rounded-xl transition-all duration-300 group shadow-sm hover:shadow-2xl
-        ${styles[color]} 
-      `}
-    >
-      <div className={`transition-colors duration-300 ${iconColors[color]}`}>{icon}</div>
-      <div>
-        <h4 className="text-xl font-bold tracking-widest mb-1 transition-colors">{title}</h4>
-        <p className="text-xs opacity-70 group-hover:opacity-100 transition-opacity font-light">{sub}</p>
-      </div>
-    </motion.button>
+    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-white/5 transition-all">
+      <div className="text-gray-600 group-hover:text-blue-400 mb-3 transition-colors">{icon}</div>
+      <h4 className="text-xs font-bold text-gray-400 group-hover:text-white tracking-[0.2em] transition-colors">{title}</h4>
+    </button>
   );
 }
 
-// ヘッダータグ
-function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
-  const styles = {
-    blue: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200 hover:border-blue-500",
-    purple: "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200 hover:border-purple-500",
-    emerald: "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200 hover:border-emerald-500",
-  };
-
+function HeaderTag({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        flex items-center gap-3 px-5 py-2.5 rounded-full text-[10px] font-bold tracking-widest 
-        transition-all duration-300 backdrop-blur-md border shadow-sm
-        ${styles[color]}
-      `}
+      className="flex items-center gap-3 px-5 py-2.5 bg-white/10 text-white hover:bg-white hover:text-black rounded-full text-[10px] font-bold tracking-widest transition-all duration-300 backdrop-blur-md border border-white/5 hover:border-white"
     >
       {icon} {label}
     </button>
   );
 }
 
-// モーダルコンテンツ
-function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
+function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
   const renderContent = () => {
     switch(page) {
       case 'apps':
@@ -370,21 +331,31 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
           <div>
              <ModalHeader title="MieeL Apps" sub="現場の困りごとを解決するアプリケーション" />
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {MieeLApps.map((app, i) => (
-                  // ▼ 修正箇所: リンク判定
-                  <a key={i} 
-                     href={app.href} 
-                     target={app.href.startsWith("http") ? "_blank" : undefined} // 外部は_blank, 内部は指定なし
-                     rel={app.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                     className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-xl hover:shadow-xl"
-                  >
-                    <div className="flex justify-between mb-6">
-                       <span className="font-mono text-xs text-gray-500 group-hover:text-gray-400 tracking-widest">{app.id}</span>
-                       <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
-                    <p className="text-xs text-gray-600 group-hover:text-gray-400 font-mono tracking-wide">{app.en}</p>
-                  </a>
+                {mieelApps.map((app, i) => (
+                  // 内部リンクは Next/Link、外部は aタグ
+                  app.href.startsWith("http") ? (
+                    <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
+                       className="block p-8 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all duration-500 group rounded-xl"
+                    >
+                      <div className="flex justify-between mb-6">
+                         <span className="font-mono text-xs text-gray-500 group-hover:text-black/60 tracking-widest">{app.id}</span>
+                         <ArrowUpRight size={18} className="text-gray-500 group-hover:text-black transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">{app.title}</h3>
+                      <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-wide">{app.en}</p>
+                    </a>
+                  ) : (
+                    <Link key={i} href={app.href} 
+                       className="block p-8 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all duration-500 group rounded-xl"
+                    >
+                      <div className="flex justify-between mb-6">
+                         <span className="font-mono text-xs text-gray-500 group-hover:text-black/60 tracking-widest">{app.id}</span>
+                         <ArrowUpRight size={18} className="text-gray-500 group-hover:text-black transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">{app.title}</h3>
+                      <p className="text-xs text-gray-500 group-hover:text-black/60 font-mono tracking-wide">{app.en}</p>
+                    </Link>
+                  )
                 ))}
              </div>
           </div>
@@ -395,23 +366,26 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <ModalHeader title="Manual & Guide" sub="アプリの使い方・活用マニュアル" />
              <div className="grid grid-cols-1 gap-12">
                {manuals.map((manual, i) => (
-                 <div key={i} className="p-10 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-white hover:shadow-lg transition-all duration-500 group">
-                   <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
-                     <BookOpen size={28} className="text-blue-600"/> {manual.title}
-                   </h3>
-                   <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
-                   <div className="bg-white p-8 rounded-xl border border-gray-100">
-                     <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
-                     <ul className="space-y-4">
-                       {manual.steps.map((step, idx) => (
-                         <li key={idx} className="flex gap-4 text-sm text-gray-800 items-start leading-relaxed">
-                           <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
-                           {step}
-                         </li>
-                       ))}
-                     </ul>
+                 <ScrollReveal key={i}>
+                   <div className="p-10 bg-white/5 border border-white/5 rounded-2xl hover:bg-white hover:text-black transition-all duration-500 group">
+                     <h3 className="text-2xl font-bold mb-4 flex items-center gap-4">
+                       <BookOpen size={28} className="text-blue-500 group-hover:text-blue-600"/> {manual.title}
+                     </h3>
+                     <p className="text-gray-400 group-hover:text-black/70 mb-8 text-sm leading-loose">{manual.desc}</p>
+                     
+                     <div className="bg-black/20 group-hover:bg-gray-100 p-8 rounded-xl transition-colors">
+                       <h4 className="text-xs font-bold text-blue-400 group-hover:text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
+                       <ul className="space-y-4">
+                         {manual.steps.map((step, idx) => (
+                           <li key={idx} className="flex gap-4 text-sm text-gray-300 group-hover:text-black items-start leading-relaxed">
+                             <CheckCircle size={18} className="shrink-0 mt-0.5 text-gray-600 group-hover:text-black/30" />
+                             {step}
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
                    </div>
-                 </div>
+                 </ScrollReveal>
                ))}
              </div>
           </div>
@@ -420,23 +394,23 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Network" sub="ICTを活用した教育を推進するメンバー" />
-             <div className="mb-10 p-10 bg-blue-50 border-l-4 border-blue-600 rounded-r-xl">
+             <div className="mb-10 p-10 bg-gradient-to-r from-blue-900/10 to-transparent border-l-4 border-blue-500 rounded-r-xl">
                <div className="flex items-center gap-6 mb-6">
-                 <div className="w-20 h-20 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center"><User size={40} /></div>
+                 <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center"><User size={40} /></div>
                  <div>
-                   <span className="text-blue-600 text-xs font-bold tracking-[0.2em] mb-2 block">ADMINISTRATOR</span>
-                   <h3 className="text-3xl font-bold text-slate-900">KOYAMA</h3>
-                   <p className="text-sm text-gray-600 mt-1">Special Education Teacher</p>
+                   <span className="text-blue-400 text-xs font-bold tracking-[0.2em] mb-2 block">ADMINISTRATOR</span>
+                   <h3 className="text-3xl font-bold">KOYAMA</h3>
+                   <p className="text-sm text-gray-400 mt-1">Special Education Teacher</p>
                  </div>
                </div>
-               <p className="text-slate-800 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
+               <p className="text-gray-300 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {networkData.map((person, i) => (
-                 <div key={i} className="p-8 bg-white border border-gray-200 rounded-xl hover:border-black transition-colors duration-500 group">
-                     <h4 className="font-bold text-xl mb-2 text-slate-900">{person.name}</h4>
-                     <p className="text-xs text-blue-600 mb-2 tracking-wide">{person.role}</p>
-                     <p className="text-xs text-gray-700">{person.desc}</p>
+                 <div key={i} className="p-8 bg-white/5 border border-white/5 rounded-xl hover:bg-white hover:text-black transition-colors duration-500 group">
+                     <h4 className="font-bold text-xl mb-2">{person.name}</h4>
+                     <p className="text-xs text-blue-400 group-hover:text-blue-600 mb-2 tracking-wide">{person.role}</p>
+                     <p className="text-xs text-gray-500 group-hover:text-black/60">{person.desc}</p>
                  </div>
                ))}
              </div>
@@ -446,14 +420,14 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Introduction" sub="MieeLアプリ導入校・研究協力校" />
-             <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl mb-10 hover:bg-white hover:shadow-lg transition-colors duration-500 group">
-               <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900"><School className="text-blue-600" size={32} /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
-               <p className="text-gray-700 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
+             <div className="p-10 bg-white/5 border border-white/5 rounded-2xl mb-10 hover:bg-white hover:text-black transition-colors duration-500 group">
+               <h3 className="text-2xl font-bold mb-4 flex items-center gap-4"><School className="text-blue-500 group-hover:text-blue-600" size={32} /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
+               <p className="text-gray-400 group-hover:text-black/70 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
              </div>
-             <div className="p-12 border border-dashed border-gray-300 rounded-2xl text-center hover:border-gray-500 transition-colors">
-               <Lightbulb className="mx-auto text-yellow-500 mb-6" size={40} />
-               <h3 className="text-2xl font-bold mb-4 text-slate-900">Future Curriculum Design</h3>
-               <p className="text-sm text-gray-600">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
+             <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center hover:border-white/30 transition-colors">
+               <Lightbulb className="mx-auto text-yellow-500/80 mb-6" size={40} />
+               <h3 className="text-2xl font-bold mb-4">Future Curriculum Design</h3>
+               <p className="text-sm text-gray-500">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
              </div>
           </div>
         );
@@ -461,23 +435,21 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
-                {analysisTools.map((tool, i) => (
-                  <a key={i} href={tool.href} target="_blank" rel="noopener noreferrer" className="bg-white p-10 hover:bg-black hover:text-white transition-colors duration-500 group block">
-                    <span className="font-bold text-xl block mb-2 text-slate-900 group-hover:text-white">{tool.jp}</span>
-                    <span className="font-mono text-xs text-gray-500 group-hover:text-gray-400 tracking-wider">{tool.en}</span>
-                  </a>
-                ))}
+             <div className="p-10 bg-white/5 border border-white/5 rounded-2xl text-center">
+                <p className="text-gray-400 mb-6">分析ツールの詳細と使い方は、専用ページに移動しました。</p>
+                <Link href="/page/page9" className="inline-block px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors">
+                   分析方法ページへ移動 ➡
+                </Link>
              </div>
           </div>
         );
       case 'profile':
         return (
           <div className="py-20 text-center">
-             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-600"><User size={48} className="text-blue-600" /></div>
-             <h2 className="text-5xl font-bold mb-4 text-slate-900">KOYAMA</h2>
-             <p className="text-blue-600 text-sm tracking-[0.2em] mb-12">ADMINISTRATOR</p>
-             <p className="text-gray-700 leading-loose max-w-xl mx-auto">
+             <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-8"><User size={48} className="text-blue-500" /></div>
+             <h2 className="text-5xl font-bold mb-4">KOYAMA</h2>
+             <p className="text-blue-400 text-sm tracking-[0.2em] mb-12">ADMINISTRATOR</p>
+             <p className="text-gray-300 leading-loose max-w-xl mx-auto">
                 埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
                 プログラミング（Python, React）を活用し、特別支援教育の課題解決に取り組んでいます。
              </p>
@@ -486,29 +458,65 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
        case 'system':
          return (
             <div className="py-20 text-center">
-               <h2 className="text-4xl font-bold mb-12 text-slate-900">SYSTEM ARCHITECTURE</h2>
+               <h2 className="text-4xl font-bold mb-12">SYSTEM ARCHITECTURE</h2>
                <div className="flex flex-wrap justify-center gap-6">
                  {['Next.js 14', 'Tailwind CSS', 'Framer Motion', 'Vercel', 'Render'].map(tag => (
-                   <span key={tag} className="px-6 py-3 border border-gray-300 rounded-full text-sm font-mono text-gray-700">{tag}</span>
+                   <span key={tag} className="px-6 py-3 border border-white/20 rounded-full text-sm font-mono text-gray-400">{tag}</span>
                  ))}
                </div>
             </div>
          );
+       
+       // ★ フィードバック (フォーム埋め込み)
        case 'feedback':
          return (
-            <div className="py-20 text-center">
-               <h2 className="text-4xl font-bold mb-8 text-slate-900">FEEDBACK</h2>
-               <p className="text-gray-700 mb-12">ご意見・ご要望・バグ報告は以下のフォームよりお願いいたします。</p>
-               <a href="https://docs.google.com/forms/d/1dKzh90OkxMoWDZXV31FgPvXG5EvNlMFOrvSPGvYTSC8/preview" target="_blank" className="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-full font-bold hover:bg-black transition-colors shadow-lg hover:shadow-xl">
-                 アンケートフォームを開く <ArrowUpRight size={18} />
-               </a>
+            <div>
+               <ModalHeader title="FEEDBACK" sub="ご意見・ご要望" />
+               <div className="mb-8 text-center">
+                 <p className="text-gray-400 mb-6">
+                   アプリの改善や、新しい指導実践の共有など、皆様からのご意見をお待ちしています。<br/>
+                   お使いのアカウントに合わせてフォームを選択してください。
+                 </p>
+                 {/* タブ切り替え */}
+                 <div className="flex justify-center gap-4 mb-8">
+                   <button 
+                     onClick={() => setFeedbackTab("ms")}
+                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "ms" ? "bg-blue-600 text-white" : "bg-white/10 text-gray-400 hover:bg-white/20"}`}
+                   >
+                     Microsoft Forms
+                   </button>
+                   <button 
+                     onClick={() => setFeedbackTab("google")}
+                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "google" ? "bg-green-600 text-white" : "bg-white/10 text-gray-400 hover:bg-white/20"}`}
+                   >
+                     Google Forms
+                   </button>
+                 </div>
+               </div>
+
+               {/* フォーム埋め込み */}
+               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-white/20">
+                 {feedbackTab === "ms" ? (
+                   <iframe 
+                     src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANa6zUxUQjRFQ1NRUFhJODhKVFMzUkdVVzVCR0JEVS4u&embed=true"
+                     className="w-full h-full border-none"
+                     allowFullScreen
+                   />
+                 ) : (
+                   <iframe 
+                     src="https://docs.google.com/forms/d/1xXzq0vJ9E5FX16CFNoTzg5VAyX6eWsuN8Xl5qEwJFTc/viewform?embedded=true"
+                     className="w-full h-full border-none"
+                   />
+                 )}
+               </div>
             </div>
          );
+         
        case 'terms':
          return (
             <div className="py-20 text-center">
-               <h2 className="text-4xl font-bold mb-8 text-slate-900">TERMS OF USE</h2>
-               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-700 text-sm leading-loose">
+               <h2 className="text-4xl font-bold mb-8">TERMS OF USE</h2>
+               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-400 text-sm leading-loose">
                  <p>本サイトは、特別支援教育の発展を目的とした非営利の研究用プラットフォームです。</p>
                  <ul className="list-disc pl-5 space-y-4">
                    <li>本サイト上のツールは、どなたでも自由にご利用いただけます。</li>
@@ -527,10 +535,10 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[150] bg-white/95 backdrop-blur-xl overflow-y-auto"
+      className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl overflow-y-auto"
     >
       <div className="min-h-screen p-6 md:p-20 relative">
-        <button onClick={onClose} className="fixed top-6 right-6 z-[160] p-3 bg-gray-100 text-slate-900 rounded-full hover:bg-black hover:text-white transition-colors"><X size={32} /></button>
+        <button onClick={onClose} className="fixed top-6 right-6 z-[70] p-3 bg-white/10 rounded-full hover:bg-white hover:text-black transition-colors"><X size={32} /></button>
         <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }} className="max-w-5xl mx-auto pt-20 pb-20">
           {renderContent()}
         </motion.div>
@@ -541,9 +549,9 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
 
 function ModalHeader({ title, sub }: { title: string, sub: string }) {
   return (
-    <div className="mb-16 border-b border-gray-200 pb-10">
-      <h2 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight text-slate-900">{title}</h2>
-      <p className="text-gray-500 text-lg font-light tracking-wide">{sub}</p>
+    <div className="mb-16 border-b border-white/20 pb-10">
+      <h2 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight">{title}</h2>
+      <p className="text-gray-400 text-lg font-light tracking-wide">{sub}</p>
     </div>
   );
 }
