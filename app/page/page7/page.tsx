@@ -16,9 +16,12 @@ import { saveAs } from "file-saver";
 // 定数・設定
 // ==========================================
 const CSV_PATH = "/lesson_cards.csv"; 
+// ★ 変更: .xlsx (マクロなし) を指定
+const TEMPLATE_PATH = "/template.xlsx"; 
 
-// ★重要: publicフォルダ内のファイル名は半角英数字「template.xlsm」にしてください
-const TEMPLATE_PATH = "/template.xlsm"; 
+// API認証不要のCSV公開URL (スプレッドシート)
+// ここにはご自身のスプレッドシートの公開CSVリンクを入れてください
+const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxxxxxxxx/pub?output=csv"; 
 
 // GoogleフォームのURL
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdqRDY5cr5wdSR8nYKmc8pyD7wzVgKli21mLUg7ECtpVLm1iw/viewform";
@@ -162,21 +165,20 @@ export default function LessonLibraryPage() {
     if (!rowData) return;
 
     try {
-      // 1. テンプレート読み込み (日本語ファイル名はエラーの元なので template.xlsm 推奨)
-      // encodeURIで念のためラップ
-      const response = await fetch(encodeURI(TEMPLATE_PATH));
-      
-      if (!response.ok) {
-        throw new Error(`テンプレートファイル(${TEMPLATE_PATH})が見つかりません。publicフォルダに配置されているか、ファイル名が半角英数字か確認してください。`);
-      }
+      // 1. テンプレート読み込み
+      const response = await fetch(TEMPLATE_PATH);
+      if (!response.ok) throw new Error(`テンプレートファイル(${TEMPLATE_PATH})が見つかりません。publicフォルダに配置してください。`);
       
       const arrayBuffer = await response.arrayBuffer();
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(arrayBuffer);
       
       // 2. シート取得
-      const ws = workbook.getWorksheet("授業カード");
-      if (!ws) throw new Error("シート「授業カード」が見つかりません。");
+      // ※ ExcelJSではシート名が文字化けする場合があるため、1枚目(index 0)を取得するのが安全です
+      const ws = workbook.worksheets[0];
+      // 特定の名前で取りたい場合は: workbook.getWorksheet("授業カード");
+
+      if (!ws) throw new Error("シートが見つかりません。");
 
       // 3. マッピング定義
       const mapping: Record<string, string> = {
@@ -204,22 +206,27 @@ export default function LessonLibraryPage() {
       Object.keys(mapping).forEach(key => {
         const cellAddr = mapping[key];
         let val = rowData[key] || "";
-        // 改行変換 (セミコロン区切りを改行へ)
+        // 改行変換
         if (['導入の内容', '展開の内容', 'まとめの内容', '授業のPOINT'].includes(key)) {
              val = val.replace(/;/g, "\n");
         }
         const cell = ws.getCell(cellAddr);
         cell.value = val;
+        // 折り返し設定 (textWrap)
         cell.alignment = { wrapText: true, vertical: 'top', horizontal: 'left' };
       });
 
-      // 5. ダウンロード (マクロ有効ブック .xlsm として保存)
+      // 5. ダウンロード ( .xlsx として保存 )
       const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: "application/vnd.ms-excel.sheet.macroEnabled.12" });
+      
+      // ★ 修正点: MIMEタイプを xlsx 用に変更
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       
       const unitName = rowData['単元名'] || '授業カード';
       const timestamp = rowData['タイムスタンプ'] ? rowData['タイムスタンプ'].split(' ')[0].replace(/\//g, '') : 'date';
-      const filename = `${unitName}_${timestamp}.xlsm`;
+      
+      // ★ 修正点: 拡張子を .xlsx に変更
+      const filename = `${unitName}_${timestamp}.xlsx`;
       
       saveAs(blob, filename);
       alert("Excelファイルを生成しました！");
@@ -238,12 +245,16 @@ export default function LessonLibraryPage() {
   const allTags = Array.from(new Set(lessons.flatMap(l => l.hashtags))).sort();
 
   const filteredLessons = lessons.filter(lesson => {
-    const matchesSearch = (
+    // 1. キーワード検索
+    const searchTarget = (
       lesson.unit_name + lesson.catch_copy + lesson.subject + lesson.goal + lesson.hashtags.join("")
-    ).toLowerCase().includes(searchQuery.toLowerCase());
+    ).toLowerCase();
+    const matchesSearch = searchTarget.includes(searchQuery.toLowerCase());
     
+    // 2. 教科フィルタ
     const matchesSubject = selectedSubject === "全て" || lesson.subject === selectedSubject;
     
+    // 3. タグフィルタ
     const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => lesson.hashtags.includes(tag));
 
     return matchesSearch && matchesSubject && matchesTags;
@@ -287,7 +298,7 @@ export default function LessonLibraryPage() {
   }
 
   // ==========================================
-  // 表示 (メイン)
+  // 表示 (メイン: ライブラリ & Generator)
   // ==========================================
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden relative">
@@ -345,9 +356,10 @@ export default function LessonLibraryPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
             >
-              {/* 検索・フィルタ */}
+              {/* 検索・フィルタパネル */}
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-200 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* キーワード検索 */}
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
                       <Search size={14} /> キーワード検索
@@ -360,6 +372,7 @@ export default function LessonLibraryPage() {
                       className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     />
                   </div>
+                  {/* 教科絞り込み */}
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
                       <Filter size={14} /> 教科で絞り込み
@@ -376,6 +389,7 @@ export default function LessonLibraryPage() {
                   </div>
                 </div>
                 
+                {/* タグ絞り込み */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center gap-2">
                     <Tag size={14} /> タグで絞り込み
@@ -414,7 +428,7 @@ export default function LessonLibraryPage() {
                 </div>
               )}
 
-              {/* ページネーション */}
+              {/* ページネーション (数字選択式) */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-12">
                   <button 
@@ -523,7 +537,7 @@ export default function LessonLibraryPage() {
                       <FileSpreadsheet size={20} /> Excelを作成してダウンロード
                     </button>
                     <p className="text-xs text-emerald-600 mt-2 text-center font-bold">
-                      ※ publicフォルダの「template.xlsm」を使用します。
+                      ※ publicフォルダの「template.xlsx」を使用します。
                     </p>
                   </div>
                 )}
@@ -557,9 +571,9 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
           alt={lesson.unit_name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm border border-blue-100">
+        <span className="absolute top-3 left-3 bg-white/90 px-2 py-1 text-xs font-bold rounded text-blue-600 shadow-sm border border-blue-100">
           {lesson.subject}
-        </div>
+        </span>
       </div>
       
       <div className="p-6 flex-grow flex flex-col">
@@ -576,12 +590,7 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
         </div>
 
         <div className="pt-4 border-t border-gray-100 mt-auto">
-          <div className="flex flex-wrap gap-1 mb-3">
-             {lesson.hashtags.slice(0, 3).map(t => (
-               <span key={t} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded">#{t}</span>
-             ))}
-          </div>
-          <button className="w-full py-2 bg-blue-600 text-white text-xs font-bold rounded-lg group-hover:bg-blue-700 transition-all">
+          <button className="w-full py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
             詳細を見る ➡
           </button>
         </div>
