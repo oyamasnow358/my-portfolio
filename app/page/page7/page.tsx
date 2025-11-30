@@ -16,7 +16,11 @@ import { saveAs } from "file-saver";
 // 定数・設定
 // ==========================================
 const CSV_PATH = "/lesson_cards.csv"; 
-const TEMPLATE_PATH = "/授業カード.xlsm"; // publicフォルダ内のテンプレート
+
+// ★重要: publicフォルダ内のファイル名は半角英数字「template.xlsm」にしてください
+const TEMPLATE_PATH = "/template.xlsm"; 
+
+// GoogleフォームのURL
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdqRDY5cr5wdSR8nYKmc8pyD7wzVgKli21mLUg7ECtpVLm1iw/viewform";
 const ITEMS_PER_PAGE = 12;
 
@@ -158,9 +162,13 @@ export default function LessonLibraryPage() {
     if (!rowData) return;
 
     try {
-      // 1. publicフォルダからテンプレートを自動読み込み
-      const response = await fetch(TEMPLATE_PATH);
-      if (!response.ok) throw new Error(`テンプレートファイル(${TEMPLATE_PATH})が見つかりません。publicフォルダに配置してください。`);
+      // 1. テンプレート読み込み (日本語ファイル名はエラーの元なので template.xlsm 推奨)
+      // encodeURIで念のためラップ
+      const response = await fetch(encodeURI(TEMPLATE_PATH));
+      
+      if (!response.ok) {
+        throw new Error(`テンプレートファイル(${TEMPLATE_PATH})が見つかりません。publicフォルダに配置されているか、ファイル名が半角英数字か確認してください。`);
+      }
       
       const arrayBuffer = await response.arrayBuffer();
       const workbook = new ExcelJS.Workbook();
@@ -205,7 +213,7 @@ export default function LessonLibraryPage() {
         cell.alignment = { wrapText: true, vertical: 'top', horizontal: 'left' };
       });
 
-      // 5. ダウンロード (マクロ有効ブックとして保存)
+      // 5. ダウンロード (マクロ有効ブック .xlsm として保存)
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.ms-excel.sheet.macroEnabled.12" });
       
@@ -230,35 +238,28 @@ export default function LessonLibraryPage() {
   const allTags = Array.from(new Set(lessons.flatMap(l => l.hashtags))).sort();
 
   const filteredLessons = lessons.filter(lesson => {
-    // 1. キーワード検索
-    const searchTarget = (
+    const matchesSearch = (
       lesson.unit_name + lesson.catch_copy + lesson.subject + lesson.goal + lesson.hashtags.join("")
-    ).toLowerCase();
-    const matchesSearch = searchTarget.includes(searchQuery.toLowerCase());
+    ).toLowerCase().includes(searchQuery.toLowerCase());
     
-    // 2. 教科フィルタ
     const matchesSubject = selectedSubject === "全て" || lesson.subject === selectedSubject;
     
-    // 3. タグフィルタ (選択したタグをすべて含んでいるか)
     const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => lesson.hashtags.includes(tag));
 
     return matchesSearch && matchesSubject && matchesTags;
   });
 
-  // ページネーション計算
   const totalPages = Math.ceil(filteredLessons.length / ITEMS_PER_PAGE);
   const currentLessons = filteredLessons.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  // ハンドラ
   const handleTagToggle = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     setCurrentPage(1);
   };
 
-  // ページ番号配列生成 (省略なし)
   const getPageNumbers = (current: number, total: number) => {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
     if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
@@ -286,7 +287,7 @@ export default function LessonLibraryPage() {
   }
 
   // ==========================================
-  // 表示 (メイン: ライブラリ & Generator)
+  // 表示 (メイン)
   // ==========================================
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden relative">
@@ -344,10 +345,9 @@ export default function LessonLibraryPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
             >
-              {/* 検索・フィルタパネル */}
+              {/* 検索・フィルタ */}
               <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-200 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* キーワード検索 */}
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
                       <Search size={14} /> キーワード検索
@@ -360,7 +360,6 @@ export default function LessonLibraryPage() {
                       className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                     />
                   </div>
-                  {/* 教科絞り込み */}
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
                       <Filter size={14} /> 教科で絞り込み
@@ -377,7 +376,6 @@ export default function LessonLibraryPage() {
                   </div>
                 </div>
                 
-                {/* タグ絞り込み */}
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center gap-2">
                     <Tag size={14} /> タグで絞り込み
@@ -416,7 +414,7 @@ export default function LessonLibraryPage() {
                 </div>
               )}
 
-              {/* ページネーション (数字選択式) */}
+              {/* ページネーション */}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-12">
                   <button 
@@ -525,7 +523,7 @@ export default function LessonLibraryPage() {
                       <FileSpreadsheet size={20} /> Excelを作成してダウンロード
                     </button>
                     <p className="text-xs text-emerald-600 mt-2 text-center font-bold">
-                      ※ テンプレート（授業カード.xlsm）は自動で読み込まれます。
+                      ※ publicフォルダの「template.xlsm」を使用します。
                     </p>
                   </div>
                 )}
@@ -559,9 +557,9 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
           alt={lesson.unit_name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <span className="absolute top-3 left-3 bg-white/90 px-2 py-1 text-xs font-bold rounded text-blue-600 shadow-sm border border-blue-100">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-blue-600 shadow-sm border border-blue-100">
           {lesson.subject}
-        </span>
+        </div>
       </div>
       
       <div className="p-6 flex-grow flex flex-col">
@@ -583,7 +581,7 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
                <span key={t} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded">#{t}</span>
              ))}
           </div>
-          <button className="w-full py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
+          <button className="w-full py-2 bg-blue-600 text-white text-xs font-bold rounded-lg group-hover:bg-blue-700 transition-all">
             詳細を見る ➡
           </button>
         </div>
@@ -632,13 +630,18 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
         </div>
 
         <div className="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 mb-12">
-          <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2"><CheckCircle size={24} className="text-blue-500"/> ねらい</h3>
+          <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+            <CheckCircle size={24} className="text-blue-500"/> ねらい
+          </h3>
           <p className="text-lg text-slate-800 leading-loose mb-8 font-medium">{lesson.goal}</p>
+          
           <div className="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm">
             <h4 className="text-sm font-bold text-blue-500 mb-3 uppercase tracking-widest">TEACHING POINTS</h4>
             <ul className="space-y-3">
               {lesson.points.map((p: string, i: number) => (
-                <li key={i} className="flex gap-3 text-slate-700"><span className="text-blue-400">•</span> {p}</li>
+                <li key={i} className="flex gap-3 text-slate-700">
+                  <span className="text-blue-400">•</span> {p}
+                </li>
               ))}
             </ul>
           </div>
@@ -671,7 +674,12 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
                 <button
                   key={l.id}
                   onClick={() => onSelectLesson(l)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${l.id === lesson.id ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}`}
+                  className={`
+                    p-4 rounded-xl border-2 text-left transition-all
+                    ${l.id === lesson.id 
+                      ? "border-blue-500 bg-blue-50 text-blue-900" 
+                      : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}
+                  `}
                 >
                   <span className="block text-xs font-bold opacity-70 mb-1">{l.id === lesson.id ? "● 表示中" : `Lesson ${l.unit_order}`}</span>
                   <span className="font-bold block truncate">{l.unit_lesson_title || l.unit_name}</span>
@@ -699,6 +707,7 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
             <DownloadBtn href={lesson.detail_excel_url} label="評価シート (Excel)" color="green" icon={<LineChart/>} />
           </div>
         </div>
+
       </div>
     </div>
   );
