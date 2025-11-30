@@ -76,7 +76,9 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  // オープニングアニメーション制御
+  // フィードバック用のタブ状態
+  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
+
   useEffect(() => {
     const timer1 = setTimeout(() => setOpPhase(1), 2000);
     const timer2 = setTimeout(() => setOpPhase(2), 4500);
@@ -94,7 +96,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
       
-      {/* 0. オープニングアニメーション (黒背景・必須機能) */}
+      {/* 0. オープニングアニメーション (黒背景) */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -127,13 +129,13 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 背景パララックス (白ベース) */}
+      {/* 背景パララックス */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
-        <div className="absolute inset-0 bg-white/20" />
+        <div className="absolute inset-0 bg-white/40" />
       </div>
 
-      {/* 固定ヘッダー (白ベース) */}
+      {/* 固定ヘッダー */}
       <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none transition-all duration-500">
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
@@ -197,9 +199,12 @@ export default function Home() {
 
         {/* 3. メインメニュー (MieeL 各機能) */}
         <section className="px-6 md:px-20 mb-40">
+          {/* 
+             ★修正ポイント: 
+             bg-white/5 (透明) ではなく、bg-gray-100 (薄いグレー) にして視認性を確保 
+          */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <StaggeredMenu>
-                {/* クリックで詳細（一覧）が開く */}
                 <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
                 <MenuCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
                 <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
@@ -211,23 +216,11 @@ export default function Home() {
 
         {/* 4. フッター */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
-            <LargeFooterBtn 
-              title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={32}/>} 
-              onClick={() => setSelectedPage('profile')} color="blue" delay={0.1}
-            />
-            <LargeFooterBtn 
-              title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={32}/>} 
-              onClick={() => setSelectedPage('feedback')} color="emerald" delay={0.2}
-            />
-            <LargeFooterBtn 
-              title="SYSTEM" sub="システム構成" icon={<Cpu size={32}/>} 
-              onClick={() => setSelectedPage('system')} color="purple" delay={0.3}
-            />
-            <LargeFooterBtn 
-              title="TERMS OF USE" sub="利用規約" icon={<FileText size={32}/>} 
-              onClick={() => setSelectedPage('terms')} color="slate" delay={0.4}
-            />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-32 max-w-6xl mx-auto">
+            <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
+            <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={() => setSelectedPage('feedback')} />
+            <FooterLink title="SYSTEM" icon={<Cpu size={16}/>} onClick={() => setSelectedPage('system')} />
+            <FooterLink title="TERMS OF USE" icon={<FileText size={16}/>} onClick={() => setSelectedPage('terms')} />
           </div>
           <div className="text-center text-gray-500 text-xs tracking-widest">
             &copy; 2025 MieeL Project. All Rights Reserved.
@@ -241,6 +234,8 @@ export default function Home() {
           <PageContent 
             page={selectedPage} 
             onClose={() => setSelectedPage(null)} 
+            feedbackTab={feedbackTab} 
+            setFeedbackTab={setFeedbackTab}
           />
         )}
       </AnimatePresence>
@@ -253,7 +248,6 @@ export default function Home() {
 // ▼ 部品コンポーネント
 // ==========================================
 
-// ぬるっと出るスクロールエフェクト
 function ScrollReveal({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
@@ -268,7 +262,6 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
-// 順番に出るメニュー
 function StaggeredMenu({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
@@ -291,6 +284,7 @@ function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: st
   );
 }
 
+// ★修正: MenuCardのデザインを白背景用に最適化
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -300,14 +294,14 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
   return (
     <motion.div
       variants={cardVariants}
-      whileHover={{ backgroundColor: "#000000", color: "#ffffff", scale: 1.02 }}
+      whileHover={{ backgroundColor: "#1a1a1a", color: "#ffffff", scale: 1.02 }}
       transition={{ duration: 0.4 }}
       onClick={onClick}
       className={`
-        bg-gray-100/50 backdrop-blur-sm border border-gray-200 p-10 md:p-14 
+        bg-slate-50 border border-gray-200 p-10 md:p-14 
         cursor-pointer group relative overflow-hidden flex flex-col justify-between
-        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-2xl
-        hover:shadow-2xl hover:border-black transition-colors duration-300
+        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-3xl
+        hover:shadow-2xl hover:border-gray-800 transition-colors duration-300
       `}
     >
       <div className="flex justify-between items-start">
@@ -315,56 +309,27 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
         <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        <p className="font-mono text-xs text-gray-600 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
+        <p className="font-mono text-xs text-gray-500 group-hover:text-gray-400 mb-3 tracking-[0.2em]">{sub}</p>
         <h3 className="text-3xl md:text-4xl font-bold text-slate-900 group-hover:text-white">{title}</h3>
       </div>
     </motion.div>
   );
 }
 
-function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title: string, sub: string, icon: any, onClick: () => void, color: "blue" | "emerald" | "purple" | "slate", delay?: number }) {
-  const styles = {
-    blue: "bg-blue-100 border-blue-300 hover:border-blue-500 text-blue-900",
-    emerald: "bg-emerald-100 border-emerald-300 hover:border-emerald-500 text-emerald-900",
-    purple: "bg-purple-100 border-purple-300 hover:border-purple-500 text-purple-900",
-    slate: "bg-slate-200 border-slate-300 hover:border-slate-500 text-slate-900",
-  };
-  const iconColors = {
-    blue: "text-blue-500 group-hover:text-blue-700",
-    emerald: "text-emerald-500 group-hover:text-emerald-700",
-    purple: "text-purple-500 group-hover:text-purple-700",
-    slate: "text-slate-500 group-hover:text-slate-700",
-  };
-
+function FooterLink({ title, icon, onClick }: { title: string, icon: any, onClick: () => void }) {
   return (
-    <motion.button 
-      onClick={onClick}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.02, backgroundColor: "#ffffff" }}
-      whileTap={{ scale: 0.98 }}
-      className={`
-        flex items-center gap-6 p-8 w-full text-left 
-        border rounded-xl transition-all duration-300 group shadow-sm hover:shadow-2xl
-        ${styles[color]} 
-      `}
-    >
-      <div className={`transition-colors duration-300 ${iconColors[color]}`}>{icon}</div>
-      <div>
-        <h4 className="text-xl font-bold tracking-widest mb-1 transition-colors">{title}</h4>
-        <p className="text-xs opacity-70 group-hover:opacity-100 transition-opacity font-light">{sub}</p>
-      </div>
-    </motion.button>
+    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-gray-100 transition-all">
+      <div className="text-gray-400 group-hover:text-blue-600 mb-3 transition-colors">{icon}</div>
+      <h4 className="text-xs font-bold text-gray-500 group-hover:text-black tracking-[0.2em] transition-colors">{title}</h4>
+    </button>
   );
 }
 
 function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
   const styles = {
-    blue: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200 hover:border-blue-500",
-    purple: "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200 hover:border-purple-500",
-    emerald: "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200 hover:border-emerald-500",
+    blue: "bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 hover:border-blue-400",
+    purple: "bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100 hover:border-purple-400",
+    emerald: "bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100 hover:border-emerald-400",
   };
 
   return (
@@ -382,15 +347,11 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
 }
 
 // ==========================================
-// ▼ モーダルコンテンツ (PageContent)
+// ▼ モーダルコンテンツ
 // ==========================================
-function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
-  // フィードバック用のタブ状態管理 (ローカル)
-  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
-
+function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
   const renderContent = () => {
     switch(page) {
-      // 1. アプリ一覧
       case 'apps':
         return (
           <div>
@@ -399,7 +360,8 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                 {mieelApps.map((app, i) => (
                   app.href.startsWith("http") ? (
                     <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
-                       className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-xl hover:shadow-xl"
+                       // ★修正: カードデザインを白背景用に明確化
+                       className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl hover:shadow-xl"
                     >
                       <div className="flex justify-between mb-6">
                          <span className="font-mono text-xs text-gray-500 group-hover:text-gray-400 tracking-widest">{app.id}</span>
@@ -410,7 +372,8 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                     </a>
                   ) : (
                     <Link key={i} href={app.href} 
-                       className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-xl hover:shadow-xl"
+                       // ★修正: 同上
+                       className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl hover:shadow-xl"
                     >
                       <div className="flex justify-between mb-6">
                          <span className="font-mono text-xs text-gray-500 group-hover:text-gray-400 tracking-widest">{app.id}</span>
@@ -424,8 +387,6 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-      
-      // 2. マニュアル
       case 'manual':
         return (
           <div>
@@ -433,17 +394,17 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              <div className="grid grid-cols-1 gap-12">
                {manuals.map((manual, i) => (
                  <ScrollReveal key={i}>
-                   <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-white hover:shadow-lg transition-all duration-500 group">
+                   <div className="p-10 bg-gray-50 border border-gray-200 rounded-3xl hover:bg-white hover:shadow-xl transition-all duration-500 group">
                      <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
                        <BookOpen size={28} className="text-blue-600"/> {manual.title}
                      </h3>
                      <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
                      
-                     <div className="bg-white p-8 rounded-xl border border-gray-100">
+                     <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
                        <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
                        <ul className="space-y-4">
                          {manual.steps.map((step, idx) => (
-                           <li key={idx} className="flex gap-4 text-sm text-gray-800 items-start leading-relaxed">
+                           <li key={idx} className="flex gap-4 text-sm text-gray-700 items-start leading-relaxed">
                              <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
                              {step}
                            </li>
@@ -456,13 +417,11 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
           </div>
         );
-
-      // 3. ネットワーク
       case 'network':
         return (
           <div>
              <ModalHeader title="Network" sub="ICTを活用した教育を推進するメンバー" />
-             <div className="mb-10 p-10 bg-blue-50 border-l-4 border-blue-600 rounded-r-xl">
+             <div className="mb-10 p-10 bg-blue-50 border-l-4 border-blue-600 rounded-r-2xl">
                <div className="flex items-center gap-6 mb-6">
                  <div className="w-20 h-20 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center"><User size={40} /></div>
                  <div>
@@ -475,103 +434,92 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {networkData.map((person, i) => (
-                 <div key={i} className="p-8 bg-white border border-gray-200 rounded-xl hover:border-black transition-colors duration-500 group">
+                 <div key={i} className="p-8 bg-white border border-gray-200 rounded-2xl hover:border-black transition-colors duration-500 group shadow-sm">
                      <h4 className="font-bold text-xl mb-2 text-slate-900">{person.name}</h4>
                      <p className="text-xs text-blue-600 mb-2 tracking-wide">{person.role}</p>
-                     <p className="text-xs text-gray-700">{person.desc}</p>
+                     <p className="text-xs text-gray-600">{person.desc}</p>
                  </div>
                ))}
              </div>
           </div>
         );
-
-      // 4. 導入校
       case 'school':
         return (
           <div>
              <ModalHeader title="Introduction" sub="MieeLアプリ導入校・研究協力校" />
-             <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl mb-10 hover:bg-white hover:shadow-lg transition-colors duration-500 group">
+             <div className="p-10 bg-gray-50 border border-gray-200 rounded-3xl mb-10 hover:bg-white hover:shadow-xl transition-colors duration-500 group">
                <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900"><School className="text-blue-600" size={32} /> 埼玉県立岩槻はるかぜ特別支援学校</h3>
                <p className="text-gray-700 text-sm leading-loose">知的障害のある児童生徒が通う特別支援学校。ICTの積極活用やデータに基づいた指導を実践。</p>
              </div>
-             <div className="p-12 border border-dashed border-gray-300 rounded-2xl text-center hover:border-gray-500 transition-colors">
+             <div className="p-12 border border-dashed border-gray-300 rounded-3xl text-center hover:border-gray-400 transition-colors">
                <Lightbulb className="mx-auto text-yellow-500 mb-6" size={40} />
                <h3 className="text-2xl font-bold mb-4 text-slate-900">Future Curriculum Design</h3>
                <p className="text-sm text-gray-600">次年度より開始される「教育課程の未来デザイン」研究プロジェクト詳細掲載予定。</p>
              </div>
           </div>
         );
-
-      // 5. 分析ツール (メニュー項目としては残るが、クリックで page9 への誘導)
       case 'tools':
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
-             <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl text-center">
-                <p className="text-gray-600 mb-6">分析ツールの詳細と使い方は、専用ページに移動しました。</p>
+             <div className="p-12 bg-gray-50 border border-gray-200 rounded-3xl text-center">
+                <p className="text-gray-600 mb-8 text-lg">分析ツールの詳細と使い方は、専用ページに移動しました。</p>
                 <Link href="/page/page9" className="inline-block px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors shadow-lg">
                    分析方法ページへ移動 ➡
                 </Link>
              </div>
           </div>
         );
-
-      // 6. プロフィール
       case 'profile':
         return (
           <div className="py-20 text-center">
-             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-600"><User size={48} className="text-blue-600" /></div>
+             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-500"><User size={48} className="text-blue-600" /></div>
              <h2 className="text-5xl font-bold mb-4 text-slate-900">KOYAMA</h2>
              <p className="text-blue-600 text-sm tracking-[0.2em] mb-12">ADMINISTRATOR</p>
-             <p className="text-gray-700 leading-loose max-w-xl mx-auto">
+             <p className="text-gray-600 leading-loose max-w-xl mx-auto">
                 埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
                 プログラミング（Python, React）を活用し、特別支援教育の課題解決に取り組んでいます。
              </p>
           </div>
         );
-
-      // 7. システム
-      case 'system':
+       case 'system':
          return (
             <div className="py-20 text-center">
                <h2 className="text-4xl font-bold mb-12 text-slate-900">SYSTEM ARCHITECTURE</h2>
                <div className="flex flex-wrap justify-center gap-6">
                  {['Next.js 14', 'Tailwind CSS', 'Framer Motion', 'Vercel', 'Render'].map(tag => (
-                   <span key={tag} className="px-6 py-3 border border-gray-300 rounded-full text-sm font-mono text-gray-700">{tag}</span>
+                   <span key={tag} className="px-6 py-3 border border-gray-300 rounded-full text-sm font-mono text-gray-600">{tag}</span>
                  ))}
                </div>
             </div>
          );
        
-       // 8. フィードバック (タブ機能付き)
        case 'feedback':
          return (
             <div>
                <ModalHeader title="FEEDBACK" sub="ご意見・ご要望" />
                <div className="mb-8 text-center">
-                 <p className="text-gray-500 mb-6">
+                 <p className="text-gray-500 mb-8">
                    アプリの改善や、新しい指導実践の共有など、皆様からのご意見をお待ちしています。<br/>
                    お使いのアカウントに合わせてフォームを選択してください。
                  </p>
-                 {/* タブ切り替え */}
                  <div className="flex justify-center gap-4 mb-8">
                    <button 
                      onClick={() => setFeedbackTab("ms")}
-                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "ms" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}`}
+                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "ms" ? "bg-blue-600 text-white shadow-lg" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
                    >
                      Microsoft Forms
                    </button>
                    <button 
                      onClick={() => setFeedbackTab("google")}
-                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "google" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}`}
+                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "google" ? "bg-green-600 text-white shadow-lg" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
                    >
                      Google Forms
                    </button>
                  </div>
                </div>
 
-               {/* フォーム埋め込み */}
-               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-gray-200 shadow-inner relative">
+               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-gray-200 shadow-inner">
                  {feedbackTab === "ms" ? (
                    <iframe 
                      src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANa6zUxUQjRFQ1NRUFhJODhKVFMzUkdVVzVCR0JEVS4u&embed=true"
@@ -580,7 +528,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                    />
                  ) : (
                    <iframe 
-                     src="https://docs.google.com/forms/d/e/1FAIpQLSc89w1_a-R-mD8dD-d-D-d-D/viewform?embedded=true" // ※URLはデモ用です。正しいURLに差し替えてください
+                     src="https://docs.google.com/forms/d/1xXzq0vJ9E5FX16CFNoTzg5VAyX6eWsuN8Xl5qEwJFTc/viewform?embedded=true"
                      className="w-full h-full border-none"
                    />
                  )}
@@ -588,12 +536,11 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
             </div>
          );
          
-       // 9. 利用規約
        case 'terms':
          return (
             <div className="py-20 text-center">
                <h2 className="text-4xl font-bold mb-8 text-slate-900">TERMS OF USE</h2>
-               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-700 text-sm leading-loose">
+               <div className="max-w-2xl mx-auto text-left space-y-8 text-gray-600 text-sm leading-loose">
                  <p>本サイトは、特別支援教育の発展を目的とした非営利の研究用プラットフォームです。</p>
                  <ul className="list-disc pl-5 space-y-4">
                    <li>本サイト上のツールは、どなたでも自由にご利用いただけます。</li>
