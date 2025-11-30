@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-// アイコン (LinkはNext.jsと被るため除外)
+// ▼ アイコン (LinkはNext.jsと競合するため除外)
 import { 
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, Video, BookOpen,
@@ -47,6 +47,16 @@ const manuals = [
     desc: "個別の支援計画や指導計画作成用のプロンプトを簡単に作成します。",
     steps: ["プロンプトの種類を選択", "実態や課題を入力", "生成された文面をコピーしてChatGPTへ"]
   },
+  {
+    title: "AI指導案作成 マニュアル",
+    desc: "基本情報を入力するだけで、AIを活用して学習指導案を自動生成します。",
+    steps: ["基本情報を入力", "プロンプトを生成してAIに入力", "AIの回答（JSON）を貼り付けてExcel出力"]
+  },
+  {
+    title: "授業カードライブラリ マニュアル",
+    desc: "先生方の実践事例を共有・検索できるデータベースです。",
+    steps: ["キーワードやタグで検索", "カードをクリックして詳細を表示", "指導案や教材をダウンロード"]
+  }
 ];
 
 // 3. つながり (Network)
@@ -57,7 +67,7 @@ const networkData = [
 ];
 
 // ==========================================
-// ▲ 設定エリア終了
+// ▲ データエリア終了
 // ==========================================
 
 export default function Home() {
@@ -66,9 +76,7 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  // フィードバック用のタブ状態
-  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
-
+  // オープニングアニメーション制御
   useEffect(() => {
     const timer1 = setTimeout(() => setOpPhase(1), 2000);
     const timer2 = setTimeout(() => setOpPhase(2), 4500);
@@ -84,10 +92,9 @@ export default function Home() {
   };
 
   return (
-    // ★ここを修正: 白背景 (bg-white) に戻しました
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
       
-      {/* オープニングアニメーション (ここは黒でOK) */}
+      {/* 0. オープニングアニメーション (黒背景・必須機能) */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -120,7 +127,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 背景パララックス (白ベース用の薄い画像) */}
+      {/* 背景パララックス (白ベース) */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
         <div className="absolute inset-0 bg-white/20" />
@@ -144,7 +151,7 @@ export default function Home() {
       {/* --- メインコンテンツ --- */}
       <div className="relative z-10 pt-60">
         
-        {/* 1. メインビジュアル (黒文字) */}
+        {/* 1. メインビジュアル */}
         <section className="px-6 md:px-20 pb-40">
            <motion.div variants={floating} animate="animate" className="mb-12">
              <img 
@@ -192,17 +199,17 @@ export default function Home() {
         <section className="px-6 md:px-20 mb-40">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <StaggeredMenu>
+                {/* クリックで詳細（一覧）が開く */}
                 <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
                 <MenuCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
                 <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
                 <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
-                {/* 分析ツールはpage8 (apps内) に入れたため、ここでは「その他」や「ツール」として残すか、削除してもOKですが残しておきます */}
                 <MenuCard title="分析ツール" sub="FOR RESEARCHERS" icon={<Activity />} onClick={() => setSelectedPage('tools')} />
              </StaggeredMenu>
           </div>
         </section>
 
-        {/* 4. フッター (色付きボタン) */}
+        {/* 4. フッター */}
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 max-w-5xl mx-auto">
             <LargeFooterBtn 
@@ -234,8 +241,6 @@ export default function Home() {
           <PageContent 
             page={selectedPage} 
             onClose={() => setSelectedPage(null)} 
-            feedbackTab={feedbackTab} 
-            setFeedbackTab={setFeedbackTab}
           />
         )}
       </AnimatePresence>
@@ -248,6 +253,7 @@ export default function Home() {
 // ▼ 部品コンポーネント
 // ==========================================
 
+// ぬるっと出るスクロールエフェクト
 function ScrollReveal({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
@@ -262,6 +268,7 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
   );
 }
 
+// 順番に出るメニュー
 function StaggeredMenu({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
@@ -322,7 +329,6 @@ function LargeFooterBtn({ title, sub, icon, onClick, color, delay = 0 }: { title
     purple: "bg-purple-100 border-purple-300 hover:border-purple-500 text-purple-900",
     slate: "bg-slate-200 border-slate-300 hover:border-slate-500 text-slate-900",
   };
-
   const iconColors = {
     blue: "text-blue-500 group-hover:text-blue-700",
     emerald: "text-emerald-500 group-hover:text-emerald-700",
@@ -375,10 +381,16 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
   );
 }
 
-function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
+// ==========================================
+// ▼ モーダルコンテンツ (PageContent)
+// ==========================================
+function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
+  // フィードバック用のタブ状態管理 (ローカル)
+  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
+
   const renderContent = () => {
     switch(page) {
-      // ★ Apps: 内部ページへのリンク一覧を表示
+      // 1. アプリ一覧
       case 'apps':
         return (
           <div>
@@ -412,33 +424,40 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
              </div>
           </div>
         );
+      
+      // 2. マニュアル
       case 'manual':
         return (
           <div>
              <ModalHeader title="各機能マニュアル" sub="アプリの使い方・活用ガイド" />
              <div className="grid grid-cols-1 gap-12">
                {manuals.map((manual, i) => (
-                 <div key={i} className="p-10 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-white hover:shadow-lg transition-all duration-500 group">
-                   <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
-                     <BookOpen size={28} className="text-blue-600"/> {manual.title}
-                   </h3>
-                   <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
-                   <div className="bg-white p-8 rounded-xl border border-gray-100">
-                     <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
-                     <ul className="space-y-4">
-                       {manual.steps.map((step, idx) => (
-                         <li key={idx} className="flex gap-4 text-sm text-gray-800 items-start leading-relaxed">
-                           <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
-                           {step}
-                         </li>
-                       ))}
-                     </ul>
+                 <ScrollReveal key={i}>
+                   <div className="p-10 bg-gray-50 border border-gray-200 rounded-2xl hover:bg-white hover:shadow-lg transition-all duration-500 group">
+                     <h3 className="text-2xl font-bold mb-4 flex items-center gap-4 text-slate-900">
+                       <BookOpen size={28} className="text-blue-600"/> {manual.title}
+                     </h3>
+                     <p className="text-gray-700 mb-8 text-sm leading-loose">{manual.desc}</p>
+                     
+                     <div className="bg-white p-8 rounded-xl border border-gray-100">
+                       <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
+                       <ul className="space-y-4">
+                         {manual.steps.map((step, idx) => (
+                           <li key={idx} className="flex gap-4 text-sm text-gray-800 items-start leading-relaxed">
+                             <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
+                             {step}
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
                    </div>
-                 </div>
+                 </ScrollReveal>
                ))}
              </div>
           </div>
         );
+
+      // 3. ネットワーク
       case 'network':
         return (
           <div>
@@ -465,6 +484,8 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
              </div>
           </div>
         );
+
+      // 4. 導入校
       case 'school':
         return (
           <div>
@@ -480,6 +501,8 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
              </div>
           </div>
         );
+
+      // 5. 分析ツール (メニュー項目としては残るが、クリックで page9 への誘導)
       case 'tools':
         return (
           <div>
@@ -492,6 +515,8 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
              </div>
           </div>
         );
+
+      // 6. プロフィール
       case 'profile':
         return (
           <div className="py-20 text-center">
@@ -504,7 +529,9 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
              </p>
           </div>
         );
-       case 'system':
+
+      // 7. システム
+      case 'system':
          return (
             <div className="py-20 text-center">
                <h2 className="text-4xl font-bold mb-12 text-slate-900">SYSTEM ARCHITECTURE</h2>
@@ -516,7 +543,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
             </div>
          );
        
-       // ★ フィードバック (フォーム埋め込み)
+       // 8. フィードバック (タブ機能付き)
        case 'feedback':
          return (
             <div>
@@ -544,7 +571,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                </div>
 
                {/* フォーム埋め込み */}
-               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-gray-200 shadow-inner">
+               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-gray-200 shadow-inner relative">
                  {feedbackTab === "ms" ? (
                    <iframe 
                      src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANa6zUxUQjRFQ1NRUFhJODhKVFMzUkdVVzVCR0JEVS4u&embed=true"
@@ -553,7 +580,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                    />
                  ) : (
                    <iframe 
-                     src="https://docs.google.com/forms/d/1xXzq0vJ9E5FX16CFNoTzg5VAyX6eWsuN8Xl5qEwJFTc/viewform?embedded=true"
+                     src="https://docs.google.com/forms/d/e/1FAIpQLSc89w1_a-R-mD8dD-d-D-d-D/viewform?embedded=true" // ※URLはデモ用です。正しいURLに差し替えてください
                      className="w-full h-full border-none"
                    />
                  )}
@@ -561,6 +588,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
             </div>
          );
          
+       // 9. 利用規約
        case 'terms':
          return (
             <div className="py-20 text-center">
