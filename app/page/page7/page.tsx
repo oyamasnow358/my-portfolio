@@ -5,7 +5,7 @@ import {
   ArrowLeft, Search, Layers, Clock, GraduationCap, Video, FileText, 
   ChevronDown, ChevronUp, Download, Tag, BookOpen, Image as ImageIcon,
   ArrowUpRight, CheckCircle, User, Cpu, LineChart, Table, FileSpreadsheet,
-  ChevronLeft, ChevronRight, ExternalLink, RefreshCw
+  ChevronLeft, ChevronRight, ExternalLink, RefreshCw, Upload, Filter
 } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse"; 
@@ -16,11 +16,9 @@ import { saveAs } from "file-saver";
 // 定数・設定
 // ==========================================
 const CSV_PATH = "/lesson_cards.csv"; 
+const TEMPLATE_PATH = "/授業カード.xlsm"; // publicフォルダ内のテンプレート
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdqRDY5cr5wdSR8nYKmc8pyD7wzVgKli21mLUg7ECtpVLm1iw/viewform";
 const ITEMS_PER_PAGE = 12;
-
-// テンプレートファイルのパス (publicフォルダ内)
-const TEMPLATE_PATH = "/授業カード.xlsm";
 
 type LessonCard = {
   id: string;
@@ -198,14 +196,16 @@ export default function LessonLibraryPage() {
       Object.keys(mapping).forEach(key => {
         const cellAddr = mapping[key];
         let val = rowData[key] || "";
-        // 改行変換
+        // 改行変換 (セミコロン区切りを改行へ)
         if (['導入の内容', '展開の内容', 'まとめの内容', '授業のPOINT'].includes(key)) {
              val = val.replace(/;/g, "\n");
         }
-        ws.getCell(cellAddr).value = val;
+        const cell = ws.getCell(cellAddr);
+        cell.value = val;
+        cell.alignment = { wrapText: true, vertical: 'top', horizontal: 'left' };
       });
 
-      // 5. ダウンロード
+      // 5. ダウンロード (マクロ有効ブックとして保存)
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.ms-excel.sheet.macroEnabled.12" });
       
@@ -214,7 +214,7 @@ export default function LessonLibraryPage() {
       const filename = `${unitName}_${timestamp}.xlsm`;
       
       saveAs(blob, filename);
-      alert("Excelファイルを作成しました！");
+      alert("Excelファイルを生成しました！");
 
     } catch (e: any) {
       console.error(e);
@@ -224,13 +224,47 @@ export default function LessonLibraryPage() {
 
 
   // ==========================================
-  // フィルタリング処理
+  // フィルタリング処理 (完全版)
   // ==========================================
-  const filteredLessons = lessons.filter(l => 
-    (l.unit_name + l.subject + l.catch_copy).toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const currentLessons = filteredLessons.slice((currentPage-1)*ITEMS_PER_PAGE, currentPage*ITEMS_PER_PAGE);
+  const allSubjects = ["全て", ...Array.from(new Set(lessons.map(l => l.subject).filter(Boolean))).sort()];
+  const allTags = Array.from(new Set(lessons.flatMap(l => l.hashtags))).sort();
+
+  const filteredLessons = lessons.filter(lesson => {
+    // 1. キーワード検索
+    const searchTarget = (
+      lesson.unit_name + lesson.catch_copy + lesson.subject + lesson.goal + lesson.hashtags.join("")
+    ).toLowerCase();
+    const matchesSearch = searchTarget.includes(searchQuery.toLowerCase());
+    
+    // 2. 教科フィルタ
+    const matchesSubject = selectedSubject === "全て" || lesson.subject === selectedSubject;
+    
+    // 3. タグフィルタ (選択したタグをすべて含んでいるか)
+    const matchesTags = selectedTags.length === 0 || selectedTags.every(tag => lesson.hashtags.includes(tag));
+
+    return matchesSearch && matchesSubject && matchesTags;
+  });
+
+  // ページネーション計算
   const totalPages = Math.ceil(filteredLessons.length / ITEMS_PER_PAGE);
+  const currentLessons = filteredLessons.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // ハンドラ
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+    setCurrentPage(1);
+  };
+
+  // ページ番号配列生成 (省略なし)
+  const getPageNumbers = (current: number, total: number) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+    if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  };
 
   // ==========================================
   // 表示 (詳細ページ)
@@ -252,12 +286,12 @@ export default function LessonLibraryPage() {
   }
 
   // ==========================================
-  // 表示 (メイン)
+  // 表示 (メイン: ライブラリ & Generator)
   // ==========================================
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden relative">
       
-      {/* 背景 */}
+      {/* 背景パララックス */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <div className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
         <div className="absolute inset-0 bg-white/40" />
@@ -310,43 +344,121 @@ export default function LessonLibraryPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
             >
-              {/* 検索バー */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input 
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="キーワードで検索..."
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500"
-                  />
+              {/* 検索・フィルタパネル */}
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-200 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {/* キーワード検索 */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
+                      <Search size={14} /> キーワード検索
+                    </label>
+                    <input 
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                      placeholder="単元名、ねらい、タグなど..."
+                      className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  {/* 教科絞り込み */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex items-center gap-2">
+                      <Filter size={14} /> 教科で絞り込み
+                    </label>
+                    <select 
+                      value={selectedSubject}
+                      onChange={(e) => { setSelectedSubject(e.target.value); setCurrentPage(1); }}
+                      className="w-full p-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 cursor-pointer outline-none"
+                    >
+                      {allSubjects.map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                {/* タグ絞り込み */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <Tag size={14} /> タグで絞り込み
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => handleTagToggle(tag)}
+                        className={`
+                          px-3 py-1.5 rounded-lg text-xs font-bold border transition-all
+                          ${selectedTags.includes(tag) 
+                            ? "bg-blue-600 border-blue-600 text-white" 
+                            : "bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600"}
+                        `}
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* カード一覧 */}
               {loading ? (
-                <div className="text-center py-20 text-gray-400">Loading...</div>
+                <div className="text-center py-20 text-gray-400 font-bold animate-pulse">Loading Data...</div>
+              ) : filteredLessons.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border border-gray-200 text-gray-500">
+                  該当する授業カードはありません。
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {currentLessons.map((lesson, i) => (
                     <LessonCardItem key={lesson.id} lesson={lesson} onClick={() => setSelectedLesson(lesson)} index={i} />
                   ))}
                 </div>
               )}
 
-              {/* ページネーション */}
+              {/* ページネーション (数字選択式) */}
               {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-8">
-                   <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-2 rounded bg-white border disabled:opacity-50"><ChevronLeft/></button>
-                   <span className="px-4 py-2 font-bold text-gray-600">{currentPage} / {totalPages}</span>
-                   <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-2 rounded bg-white border disabled:opacity-50"><ChevronRight/></button>
+                <div className="flex justify-center items-center gap-2 mt-12">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  {getPageNumbers(currentPage, totalPages).map((p, i) => (
+                    typeof p === 'number' ? (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentPage(p)}
+                        className={`
+                          w-10 h-10 rounded-lg font-bold transition-all border flex items-center justify-center
+                          ${currentPage === p 
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md scale-110" 
+                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"}
+                        `}
+                      >
+                        {p}
+                      </button>
+                    ) : (
+                      <span key={i} className="px-2 text-gray-400 font-bold">...</span>
+                    )
+                  ))}
+
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 rounded-lg bg-white border border-gray-200 disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               )}
             </motion.div>
           )}
 
-          {/* === Excel作成画面 === */}
+          {/* === Excel作成モード === */}
           {activeTab === "generator" && (
             <motion.div
               key="generator"
@@ -394,9 +506,9 @@ export default function LessonLibraryPage() {
                       <select 
                         value={selectedRowIndex}
                         onChange={(e) => setSelectedRowIndex(e.target.value)}
-                        className="w-full p-3 bg-white border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                        className="w-full p-3 bg-white border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-emerald-900"
                       >
-                        <option value="">選択してください</option>
+                        <option value="">▼ 選択してください</option>
                         {sheetData.map((row: any, i: number) => (
                           <option key={i} value={i}>
                             [{row['タイムスタンプ']}] {row['単元名']} ({row['授業者'] || '名前なし'})
@@ -428,7 +540,7 @@ export default function LessonLibraryPage() {
 }
 
 // ==========================================
-// コンポーネント群 (カード・詳細ページ等)
+// コンポーネント群
 // ==========================================
 
 function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClick: () => void, index: number }) {
@@ -447,7 +559,7 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
           alt={lesson.unit_name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <span className="absolute top-3 left-3 bg-white/90 px-2 py-1 text-xs font-bold rounded text-blue-600 shadow-sm">
+        <span className="absolute top-3 left-3 bg-white/90 px-2 py-1 text-xs font-bold rounded text-blue-600 shadow-sm border border-blue-100">
           {lesson.subject}
         </span>
       </div>
@@ -461,11 +573,16 @@ function LessonCardItem({ lesson, onClick, index }: { lesson: LessonCard, onClic
         </p>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-bold text-gray-600"><GraduationCap size={12}/> {lesson.target_grade}</span>
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-bold text-gray-600"><Clock size={12}/> {lesson.duration}</span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-bold text-gray-600 border border-gray-200"><GraduationCap size={12}/> {lesson.target_grade}</span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 text-xs font-bold text-gray-600 border border-gray-200"><Clock size={12}/> {lesson.duration}</span>
         </div>
 
         <div className="pt-4 border-t border-gray-100 mt-auto">
+          <div className="flex flex-wrap gap-1 mb-3">
+             {lesson.hashtags.slice(0, 3).map(t => (
+               <span key={t} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded">#{t}</span>
+             ))}
+          </div>
           <button className="w-full py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all">
             詳細を見る ➡
           </button>
@@ -489,13 +606,18 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="mb-8 pb-8 border-b border-gray-200">
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">{lesson.unit_name}</h1>
+          <div className="flex gap-3 mb-4">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">{lesson.subject}</span>
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">{lesson.target_grade}</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 leading-tight">{lesson.unit_name}</h1>
           <p className="text-xl text-gray-500 font-bold">{lesson.catch_copy}</p>
         </div>
 
         <div className="rounded-3xl overflow-hidden shadow-lg mb-12 border border-gray-100">
           <img 
             src={lesson.image || "https://placehold.co/1200x600/f1f5f9/94a3b8?text=No+Image"} 
+            alt={lesson.unit_name}
             className="w-full h-auto object-cover max-h-[500px]"
           />
         </div>
@@ -503,18 +625,22 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <InfoCard label="対象" value={lesson.target_grade} icon={<GraduationCap />} />
           <InfoCard label="時間" value={lesson.duration} icon={<Clock />} />
-          <InfoCard label="教科" value={lesson.subject} icon={<BookOpen />} />
           <InfoCard label="障害種" value={lesson.disability_type} icon={<User />} />
           <InfoCard label="発達段階" value={lesson.developmental_stage} icon={<Layers />} />
+          <InfoCard label="教科" value={lesson.subject} icon={<BookOpen />} />
           <InfoCard label="ICT活用" value={lesson.ict_use} icon={<Cpu />} />
         </div>
 
         <div className="bg-blue-50/50 rounded-3xl p-8 border border-blue-100 mb-12">
-          <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2"><CheckCircle size={24}/> ねらい</h3>
+          <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2"><CheckCircle size={24} className="text-blue-500"/> ねらい</h3>
           <p className="text-lg text-slate-800 leading-loose mb-8 font-medium">{lesson.goal}</p>
           <div className="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm">
-            <h4 className="text-sm font-bold text-blue-500 mb-3 uppercase tracking-widest">POINTS</h4>
-            <ul className="space-y-3">{lesson.points.map((p: string, i: number) => <li key={i} className="flex gap-3 text-slate-700"><span className="text-blue-400">•</span> {p}</li>)}</ul>
+            <h4 className="text-sm font-bold text-blue-500 mb-3 uppercase tracking-widest">TEACHING POINTS</h4>
+            <ul className="space-y-3">
+              {lesson.points.map((p: string, i: number) => (
+                <li key={i} className="flex gap-3 text-slate-700"><span className="text-blue-400">•</span> {p}</li>
+              ))}
+            </ul>
           </div>
         </div>
 
@@ -542,7 +668,11 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
             <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Layers size={24} className="text-gray-400"/> この単元の授業</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {unitLessons.map((l: LessonCard) => (
-                <button key={l.id} onClick={() => onSelectLesson(l)} className={`p-4 rounded-xl border-2 text-left transition-all ${l.id === lesson.id ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}`}>
+                <button
+                  key={l.id}
+                  onClick={() => onSelectLesson(l)}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${l.id === lesson.id ? "border-blue-500 bg-blue-50 text-blue-900" : "border-gray-200 hover:border-blue-300 text-gray-600 hover:bg-gray-50"}`}
+                >
                   <span className="block text-xs font-bold opacity-70 mb-1">{l.id === lesson.id ? "● 表示中" : `Lesson ${l.unit_order}`}</span>
                   <span className="font-bold block truncate">{l.unit_lesson_title || l.unit_name}</span>
                 </button>
@@ -569,7 +699,6 @@ function DetailPage({ lesson, onBack, showFlow, setShowFlow, allLessons, onSelec
             <DownloadBtn href={lesson.detail_excel_url} label="評価シート (Excel)" color="green" icon={<LineChart/>} />
           </div>
         </div>
-
       </div>
     </div>
   );
