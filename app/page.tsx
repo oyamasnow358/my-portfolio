@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-// ▼ アイコン (LinkはNext.jsと競合するため除外)
 import { 
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, Video, BookOpen,
@@ -9,6 +8,7 @@ import {
   Brain, LineChart, Sparkles, Users
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // ==========================================
 // ▼ データ設定エリア
@@ -67,7 +67,7 @@ const networkData = [
 ];
 
 // ==========================================
-// ▲ データエリア終了
+// ▲ 設定エリア終了
 // ==========================================
 
 export default function Home() {
@@ -75,9 +75,7 @@ export default function Home() {
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-
-  // フィードバック用のタブ状態
-  const [feedbackTab, setFeedbackTab] = useState<"ms" | "google">("ms");
+  const router = useRouter();
 
   useEffect(() => {
     const timer1 = setTimeout(() => setOpPhase(1), 2000);
@@ -85,7 +83,6 @@ export default function Home() {
     return () => { clearTimeout(timer1); clearTimeout(timer2); };
   }, []);
 
-  // ふわふわ浮くアニメーション
   const floating = {
     animate: {
       y: [0, -10, 0],
@@ -93,10 +90,15 @@ export default function Home() {
     },
   };
 
+  const goToFeedback = () => {
+    router.push("/fpafe");
+  };
+
   return (
+    // ★ 背景を白 (bg-white) に設定、文字色は黒系 (text-slate-900)
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
       
-      {/* 0. オープニングアニメーション (黒背景) */}
+      {/* オープニングアニメーション (ここだけは演出上、黒背景のまま) */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -129,13 +131,13 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* 背景パララックス */}
+      {/* 背景パララックス (白背景用) */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
         <div className="absolute inset-0 bg-white/40" />
       </div>
 
-      {/* 固定ヘッダー */}
+      {/* 固定ヘッダー (白ベース) */}
       <header className="fixed w-full top-0 left-0 p-8 z-40 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none transition-all duration-500">
         <div className="pointer-events-auto bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:border-gray-400 transition-all">
           <h1 className="text-xs font-bold tracking-widest flex items-center gap-3 text-black">
@@ -146,7 +148,7 @@ export default function Home() {
         <nav className="pointer-events-auto flex gap-4 overflow-x-auto max-w-full pb-2 md:pb-0 scrollbar-hide">
           <HeaderTag icon={<User size={12} />} label="PROFILE" onClick={() => setSelectedPage('profile')} color="blue" />
           <HeaderTag icon={<Cpu size={12} />} label="SYSTEM" onClick={() => setSelectedPage('system')} color="purple" />
-          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={() => setSelectedPage('feedback')} color="emerald" />
+          <HeaderTag icon={<MessageSquare size={12} />} label="FEEDBACK" onClick={goToFeedback} color="emerald" />
         </nav>
       </header>
 
@@ -161,7 +163,7 @@ export default function Home() {
              />
            </motion.div>
            
-           <div className="space-y-4 mb-20 text-black">
+           <div className="space-y-4 mb-20 text-slate-900">
              <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.0 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">SPECIAL</motion.h2></div>
              <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.1 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter">EDUCATION</motion.h2></div>
              <div className="overflow-hidden"><motion.h2 initial={{ y: 100 }} animate={{ y: 0 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 5.2 }} className="text-7xl md:text-9xl font-bold leading-[0.85] tracking-tighter text-gray-400">SUPPORT.</motion.h2></div>
@@ -169,10 +171,10 @@ export default function Home() {
 
            <motion.div 
              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.5, delay: 5.5 }}
-             className="border-l-2 border-black/10 pl-8 ml-2 max-w-2xl"
+             className="border-l-2 border-slate-300 pl-8 ml-2 max-w-2xl"
            >
              <p className="text-slate-900 text-xl md:text-2xl tracking-wide font-light mb-6">Data-Driven Education.</p>
-             <p className="text-gray-700 text-sm md:text-base leading-loose">
+             <p className="text-gray-600 font-light text-sm md:text-base leading-loose">
                指導案作成から統計分析までを一元化したプラットフォーム。
              </p>
            </motion.div>
@@ -182,7 +184,7 @@ export default function Home() {
         <section className="px-6 md:px-20 mb-40">
           <ScrollReveal>
             <div className="border-t border-gray-200 pt-32">
-              <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl text-black">
+              <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl text-slate-900">
                 MieeLは、特別支援教育の現場における<br className="hidden md:block"/>
                 <span className="text-blue-600">「経験」</span>や<span className="text-blue-600">「勘」</span>に、
                 データという新たな<span className="text-blue-600">「根拠」</span>をプラスします。
@@ -197,12 +199,8 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー (MieeL 各機能) */}
+        {/* 3. メインメニュー (白背景で見やすいカード) */}
         <section className="px-6 md:px-20 mb-40">
-          {/* 
-             ★修正ポイント: 
-             bg-white/5 (透明) ではなく、bg-gray-100 (薄いグレー) にして視認性を確保 
-          */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <StaggeredMenu>
                 <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
@@ -218,7 +216,7 @@ export default function Home() {
         <footer className="bg-gray-50 border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-32 max-w-6xl mx-auto">
             <FooterLink title="ADMINISTRATOR" icon={<User size={16}/>} onClick={() => setSelectedPage('profile')} />
-            <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={() => setSelectedPage('feedback')} />
+            <FooterLink title="FEEDBACK" icon={<MessageSquare size={16}/>} onClick={goToFeedback} />
             <FooterLink title="SYSTEM" icon={<Cpu size={16}/>} onClick={() => setSelectedPage('system')} />
             <FooterLink title="TERMS OF USE" icon={<FileText size={16}/>} onClick={() => setSelectedPage('terms')} />
           </div>
@@ -231,12 +229,7 @@ export default function Home() {
       {/* --- モーダル (詳細ページ) --- */}
       <AnimatePresence>
         {selectedPage && (
-          <PageContent 
-            page={selectedPage} 
-            onClose={() => setSelectedPage(null)} 
-            feedbackTab={feedbackTab} 
-            setFeedbackTab={setFeedbackTab}
-          />
+          <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
         )}
       </AnimatePresence>
 
@@ -278,13 +271,13 @@ function FeatureItem({ icon, title, desc }: { icon: any, title: string, desc: st
   return (
     <div className="group">
       <div className="text-blue-600 mb-8 opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">{icon}</div>
-      <h4 className="text-2xl font-bold mb-6 tracking-wide text-black">{title}</h4>
-      <p className="text-gray-700 leading-loose">{desc}</p>
+      <h4 className="text-2xl font-bold mb-6 tracking-wide text-slate-900">{title}</h4>
+      <p className="text-gray-600 leading-loose">{desc}</p>
     </div>
   );
 }
 
-// ★修正: MenuCardのデザインを白背景用に最適化
+// ★修正: MenuCardを白背景用に見やすく
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -298,10 +291,9 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
       transition={{ duration: 0.4 }}
       onClick={onClick}
       className={`
-        bg-slate-50 border border-gray-200 p-10 md:p-14 
+        bg-white border border-gray-200 p-10 md:p-14 
         cursor-pointer group relative overflow-hidden flex flex-col justify-between
-        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-3xl
-        hover:shadow-2xl hover:border-gray-800 transition-colors duration-300
+        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-3xl shadow-sm hover:shadow-2xl hover:border-black transition-all duration-300
       `}
     >
       <div className="flex justify-between items-start">
@@ -318,18 +310,18 @@ function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, s
 
 function FooterLink({ title, icon, onClick }: { title: string, icon: any, onClick: () => void }) {
   return (
-    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-gray-100 transition-all">
+    <button onClick={onClick} className="text-left group w-full p-4 rounded hover:bg-gray-50 transition-all">
       <div className="text-gray-400 group-hover:text-blue-600 mb-3 transition-colors">{icon}</div>
-      <h4 className="text-xs font-bold text-gray-500 group-hover:text-black tracking-[0.2em] transition-colors">{title}</h4>
+      <h4 className="text-xs font-bold text-gray-500 group-hover:text-slate-900 tracking-[0.2em] transition-colors">{title}</h4>
     </button>
   );
 }
 
 function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, onClick: () => void, color: "blue" | "purple" | "emerald" }) {
   const styles = {
-    blue: "bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100 hover:border-blue-400",
-    purple: "bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100 hover:border-purple-400",
-    emerald: "bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100 hover:border-emerald-400",
+    blue: "bg-blue-50 text-blue-900 hover:bg-blue-100 border-blue-100 hover:border-blue-300",
+    purple: "bg-purple-50 text-purple-900 hover:bg-purple-100 border-purple-100 hover:border-purple-300",
+    emerald: "bg-emerald-50 text-emerald-900 hover:bg-emerald-100 border-emerald-100 hover:border-emerald-300",
   };
 
   return (
@@ -347,9 +339,9 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
 }
 
 // ==========================================
-// ▼ モーダルコンテンツ
+// ▼ モーダルコンテンツ (白背景)
 // ==========================================
-function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
+function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   const renderContent = () => {
     switch(page) {
       case 'apps':
@@ -360,7 +352,6 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                 {mieelApps.map((app, i) => (
                   app.href.startsWith("http") ? (
                     <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
-                       // ★修正: カードデザインを白背景用に明確化
                        className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl hover:shadow-xl"
                     >
                       <div className="flex justify-between mb-6">
@@ -372,7 +363,6 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                     </a>
                   ) : (
                     <Link key={i} href={app.href} 
-                       // ★修正: 同上
                        className="block p-8 bg-gray-50 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl hover:shadow-xl"
                     >
                       <div className="flex justify-between mb-6">
@@ -430,7 +420,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                    <p className="text-sm text-gray-600 mt-1">Special Education Teacher</p>
                  </div>
                </div>
-               <p className="text-slate-800 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
+               <p className="text-gray-700 text-sm leading-loose">特別支援教育×データサイエンス。現場の「感覚」を「根拠」に変えるツール開発を行っています。</p>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {networkData.map((person, i) => (
@@ -473,7 +463,7 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
       case 'profile':
         return (
           <div className="py-20 text-center">
-             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-500"><User size={48} className="text-blue-600" /></div>
+             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-600"><User size={48} className="text-blue-600" /></div>
              <h2 className="text-5xl font-bold mb-4 text-slate-900">KOYAMA</h2>
              <p className="text-blue-600 text-sm tracking-[0.2em] mb-12">ADMINISTRATOR</p>
              <p className="text-gray-600 leading-loose max-w-xl mx-auto">
@@ -493,49 +483,6 @@ function PageContent({ page, onClose, feedbackTab, setFeedbackTab }: any) {
                </div>
             </div>
          );
-       
-       case 'feedback':
-         return (
-            <div>
-               <ModalHeader title="FEEDBACK" sub="ご意見・ご要望" />
-               <div className="mb-8 text-center">
-                 <p className="text-gray-500 mb-8">
-                   アプリの改善や、新しい指導実践の共有など、皆様からのご意見をお待ちしています。<br/>
-                   お使いのアカウントに合わせてフォームを選択してください。
-                 </p>
-                 <div className="flex justify-center gap-4 mb-8">
-                   <button 
-                     onClick={() => setFeedbackTab("ms")}
-                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "ms" ? "bg-blue-600 text-white shadow-lg" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                   >
-                     Microsoft Forms
-                   </button>
-                   <button 
-                     onClick={() => setFeedbackTab("google")}
-                     className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${feedbackTab === "google" ? "bg-green-600 text-white shadow-lg" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-                   >
-                     Google Forms
-                   </button>
-                 </div>
-               </div>
-
-               <div className="bg-white rounded-2xl overflow-hidden h-[800px] w-full border border-gray-200 shadow-inner">
-                 {feedbackTab === "ms" ? (
-                   <iframe 
-                     src="https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAMAANa6zUxUQjRFQ1NRUFhJODhKVFMzUkdVVzVCR0JEVS4u&embed=true"
-                     className="w-full h-full border-none"
-                     allowFullScreen
-                   />
-                 ) : (
-                   <iframe 
-                     src="https://docs.google.com/forms/d/1xXzq0vJ9E5FX16CFNoTzg5VAyX6eWsuN8Xl5qEwJFTc/viewform?embedded=true"
-                     className="w-full h-full border-none"
-                   />
-                 )}
-               </div>
-            </div>
-         );
-         
        case 'terms':
          return (
             <div className="py-20 text-center">
