@@ -1,6 +1,10 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
+// ★【修正点】この行を追加することで、このAPIは常に最新データを取得しに行きます（キャッシュ無効化）
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     // 環境変数の読み込み
@@ -25,6 +29,8 @@ export async function GET() {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
+    
+    // 範囲指定（列が増えても対応できるよう念のため範囲を少し広くとることも可能ですが、元のままでも動作します）
     const range = "フォームの回答 1!A1:Z1000";
 
     // データ取得

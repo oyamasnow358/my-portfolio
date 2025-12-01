@@ -141,7 +141,14 @@ export default function LessonLibraryPage() {
     setSheetLoading(true);
     try {
       // APIルートを叩く
-      const response = await fetch("/api/sheets", { cache: 'no-store' });
+      // ★【修正点】キャッシュを確実に回避するため、タイムスタンプを付与
+      const response = await fetch(`/api/sheets?t=${new Date().getTime()}`, { 
+        cache: 'no-store',
+        headers: {
+          'Pragma': 'no-cache',
+          'Cache-Control': 'no-cache'
+        }
+      });
       const result = await response.json();
 
       if (!response.ok) {

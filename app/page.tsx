@@ -126,7 +126,7 @@ export default function Home() {
                 className="text-center"
               >
                 <p className="text-xl md:text-3xl text-gray-400 mb-8 tracking-[0.3em] font-bold"> すぐわかる。すぐ使える。</p>
-                <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">MieeL</h1>
+                <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white">ミエル</h1>
               </motion.div>
             )}
           </motion.div>
