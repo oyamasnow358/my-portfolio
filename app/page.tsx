@@ -14,8 +14,8 @@ import { useRouter } from "next/navigation";
 // ▼ データ設定エリア
 // ==========================================
 
-const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用（オープニング）
-const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用（メイン画面）
+const LOGO_OP_PATH = "/MieeL.png";    
+const LOGO_MAIN_PATH = "/MieeL2.png"; 
 
 // 1. MieeL 各機能
 const MieeLApps = [
@@ -30,7 +30,7 @@ const MieeLApps = [
   { id: "08", title: "研究・分析", en: "ANALYSIS & TOOLS", href: "/page/page8" },
 ];
 
-// 2. 分析ツール一覧 (モーダル内表示用)
+// 2. 分析ツール一覧
 const analysisTools = [
   { jp: "応用行動分析", en: "Applied Behavior Analysis", href: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamlit.app/" },
   { jp: "機能的行動評価", en: "Functional Behavior Assessment", href: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/" },
@@ -151,7 +151,7 @@ export default function Home() {
       {/* 背景パララックス (白ベース) */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
-        <div className="absolute inset-0 bg-white/30" />
+        <div className="absolute inset-0 bg-white/40" />
       </div>
 
       {/* 固定ヘッダー */}
@@ -205,7 +205,10 @@ export default function Home() {
 
         {/* 2. コンセプト */}
         <section className="px-6 md:px-20 mb-40">
-          <ScrollReveal>
+          <motion.div
+             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}
+             variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }}
+          >
             <div className="border-t border-gray-200 pt-32">
               <h3 className="text-3xl md:text-5xl font-bold leading-tight mb-16 max-w-5xl text-slate-900">
                 MieeLは、特別支援教育の現場における<br className="hidden md:block"/>
@@ -219,10 +222,10 @@ export default function Home() {
                  <FeatureItem icon={<Sparkles size={48} />} title="Evidence" desc="専門的な統計分析ツールを内蔵。実践の成果をデータで検証し、より確かな教育実践へとつなげます。" color="bg-orange-50 text-orange-600" />
               </div>
             </div>
-          </ScrollReveal>
+          </motion.div>
         </section>
 
-        {/* 3. メインメニュー */}
+        {/* 3. メインメニュー (確実に表示) */}
         <section className="px-6 md:px-20 mb-40">
           <div className="flex items-baseline justify-between mb-10 border-b border-gray-200 pb-4">
              <h3 className="text-3xl md:text-4xl font-black text-slate-900">MieeL 各機能</h3>
@@ -230,17 +233,16 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             <StaggeredMenu>
-                {MieeLApps.map((app, i) => (
-                  <MenuCard 
-                    key={i}
-                    title={app.title} 
-                    sub={app.en} 
-                    icon={<Layers />} 
-                    href={app.href} 
-                  />
-                ))}
-             </StaggeredMenu>
+              {MieeLApps.map((app, i) => (
+                <MenuCard 
+                  key={i}
+                  title={app.title} 
+                  sub={app.en} 
+                  icon={<Layers />} 
+                  href={app.href} 
+                  index={i}
+                />
+              ))}
           </div>
         </section>
 
@@ -252,13 +254,13 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-             <InfoCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
-             <InfoCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
-             <InfoCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
+             <InfoCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} index={0} />
+             <InfoCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} index={1} />
+             <InfoCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} index={2} />
           </div>
         </section>
 
-        {/* 5. フッター (光るおしゃれなボタン) */}
+        {/* 5. フッター */}
         <footer className="bg-white border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32 max-w-7xl mx-auto">
             <StylishFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={24}/>} onClick={() => setSelectedPage('profile')} color="blue" />
@@ -287,32 +289,6 @@ export default function Home() {
 // ▼ 部品コンポーネント
 // ==========================================
 
-function ScrollReveal({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, margin: "-50px" }}
-      variants={{
-        hidden: { opacity: 0, y: 40 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function StaggeredMenu({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, margin: "-50px" }}
-      variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-      className="contents"
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 function FeatureItem({ icon, title, desc, color }: { icon: any, title: string, desc: string, color: string }) {
   return (
     <div className="group p-8 rounded-3xl border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-all duration-300">
@@ -325,22 +301,19 @@ function FeatureItem({ icon, title, desc, color }: { icon: any, title: string, d
   );
 }
 
-// アプリ用カード (白背景用)
-function MenuCard({ title, sub, icon, href }: { title: string, sub: string, icon: any, href: string }) {
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
-  };
-
+// アプリ用カード (白背景用・確実に表示)
+function MenuCard({ title, sub, icon, href, index }: { title: string, sub: string, icon: any, href: string, index: number }) {
   const isExternal = href.startsWith("http");
 
   const Content = () => (
     <motion.div
-      variants={cardVariants}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.05, duration: 0.5 }}
       whileHover={{ backgroundColor: "#1a1a1a", color: "#ffffff", scale: 1.02 }}
-      transition={{ duration: 0.4 }}
       className={`
-        bg-white border border-gray-200 p-10 md:p-12 rounded-3xl cursor-pointer group relative overflow-hidden flex flex-col justify-between h-full
+        bg-white border-2 border-gray-100 p-10 md:p-12 rounded-3xl cursor-pointer group relative overflow-hidden flex flex-col justify-between h-full
         hover:shadow-2xl hover:border-gray-800 transition-all duration-300
       `}
     >
@@ -362,12 +335,14 @@ function MenuCard({ title, sub, icon, href }: { title: string, sub: string, icon
   );
 }
 
-// 情報用カード (モーダル用)
-function InfoCard({ title, sub, icon, onClick }: { title: string, sub: string, icon: any, onClick: () => void }) {
+// 情報用カード
+function InfoCard({ title, sub, icon, onClick, index }: { title: string, sub: string, icon: any, onClick: () => void, index: number }) {
   return (
     <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false }}
-      variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1, duration: 0.5 }}
       onClick={onClick}
       whileHover={{ y: -5 }}
       className="bg-white border border-gray-200 p-10 rounded-3xl cursor-pointer hover:shadow-xl hover:border-blue-400 transition-all group"
@@ -379,7 +354,7 @@ function InfoCard({ title, sub, icon, onClick }: { title: string, sub: string, i
   );
 }
 
-// おしゃれなフッターボタン (光るグロー効果)
+// おしゃれなフッターボタン
 function StylishFooterBtn({ title, sub, icon, onClick, color }: { title: string, sub: string, icon: any, onClick: () => void, color: string }) {
   const colors: any = {
     blue: "hover:border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]",
@@ -421,13 +396,12 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
 }
 
 // ==========================================
-// ▼ モーダルコンテンツ (アコーディオン実装)
+// ▼ モーダルコンテンツ (アコーディオン実装・確実表示)
 // ==========================================
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   
   const renderContent = () => {
     switch(page) {
-      // ★変更: マニュアルをアコーディオン化
       case 'manual':
         return (
           <div>
@@ -601,7 +575,7 @@ function AccordionItem({ title, icon, children }: { title: string, icon: any, ch
 function ModalHeader({ title, sub }: { title: string, sub: string }) {
   return (
     <div className="mb-12 border-b border-gray-100 pb-8">
-      <p className="text-blue-600 text-xs font-bold tracking-widest mb-2">{sub}</p>
+      <p className="text-blue-500 text-xs font-bold tracking-widest mb-2">{sub}</p>
       <h2 className="text-4xl md:text-5xl font-black text-slate-900">{title}</h2>
     </div>
   );
