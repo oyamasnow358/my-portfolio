@@ -44,6 +44,14 @@ const manuals = [
     title: "授業カードライブラリ マニュアル",
     desc: "先生方の実践事例を共有・検索できるデータベースです。",
     steps: ["キーワードやタグで検索", "カードをクリックして詳細を表示", "指導案や教材をダウンロード"]
+  },
+   {
+    title: "早引き学習指導要領（知的段階） マニュアル",
+    desc: "学習指導要領の中から、必要な部分を素早く探し出して閲覧することができます。",
+    steps: [
+      "学部、障害種別（段階）、教科を選択します。",
+      "「表示する」ボタンをクリックすると、該当する内容（目標・指導内容）が表示されます。"
+    ]
   }
 ];
 
@@ -56,6 +64,8 @@ const networkData = [
 
 // 4. 分析ツールデータ
 const analysisTools = [
+  { name: "ABA（応用行動分析）", url: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamli.app/", icon: <PieChart size={24} />, desc: "行動の原理を応用し、望ましい行動を促進します。" },
+  { name: "FBA/PBS", url: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/", icon: <PieChart size={24} />, desc: "問題行動の原因を探り、前向きな支援計画を立てます。" },
   { name: "アンケートデータ統計分析", url: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/", icon: <PieChart size={24} />, desc: "アンケート結果を集計し、視覚的なグラフと基礎統計量を出力します。" },
   { name: "相関分析", url: "https://soukan-jlhkdhkradbnxssy29aqte.streamlit.app/", icon: <ScatterChart size={24} />, desc: "2つの変数の関係性を分析し、相関係数と散布図を表示します。" },
   { name: "多変量回帰分析", url: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/", icon: <LineChart size={24} />, desc: "複数の要因から結果を予測するモデルを作成し、要因の影響度を分析します。" },
