@@ -422,8 +422,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                  <div className="w-20 h-20 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-md"><User size={40} /></div>
                  <div>
                    <span className="text-blue-600 text-xs font-bold tracking-widest mb-2 block">ADMINISTRATOR</span>
-                   <h3 className="text-3xl font-black text-slate-900">Koyama</h3>
-                   <h3 className="text-3xl font-black text-slate-900">Takayuki</h3>
+                   <h3 className="text-3xl font-black text-slate-900">Koyama Takayuki</h3>                   
                    <p className="text-sm text-gray-600 mt-1 font-bold">Special Education Teacher</p>
                  </div>
                </div>
@@ -513,7 +512,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
                     <div className="inline-block px-4 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold tracking-widest mb-4">
                       LEAD DEVELOPER
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-2">KOYAMA</h2>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-2">Koyama Takayuki</h2>
                     <p className="text-lg text-gray-300 font-medium mb-6">Special Education Teacher</p>
                     <p className="text-sm text-gray-400 leading-loose max-w-lg">
                       埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
