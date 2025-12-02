@@ -230,14 +230,15 @@ export default function Home() {
         </section>
 
         {/* 4. フッター */}
-        <footer className="bg-white border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
+        {/* 背景を黒に変更 (bg-black, text-white, border-gray-800) */}
+        <footer className="bg-black text-white border-t border-gray-800 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32 max-w-7xl mx-auto">
             <StylishFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={24}/>} onClick={() => setSelectedPage('profile')} color="blue" />
             <StylishFooterBtn title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={24}/>} onClick={goToFeedback} color="emerald" />
             <StylishFooterBtn title="SYSTEM" sub="システム構成" icon={<Cpu size={24}/>} onClick={() => setSelectedPage('system')} color="purple" />
             <StylishFooterBtn title="TERMS OF USE" sub="利用規約" icon={<FileText size={24}/>} onClick={() => setSelectedPage('terms')} color="gray" />
           </div>
-          <div className="text-center text-gray-400 text-xs tracking-widest">
+          <div className="text-center text-gray-500 text-xs tracking-widest">
             &copy; 2025 MieeL Project. All Rights Reserved.
           </div>
         </footer>
@@ -446,11 +447,40 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
-             <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl text-center mb-10">
-                <p className="text-gray-500 mb-6 font-bold">解説付きのメインページはこちら</p>
-                <Link href="/page/page9" className="inline-block px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors shadow-lg">
-                   分析方法ページへ移動 ➡
-                </Link>
+             <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl mb-10">
+                <h4 className="font-bold text-slate-900 mb-6 border-b pb-2">利用可能な分析アプリ一覧</h4>
+                <ul className="space-y-4 text-left">
+                  <li>
+                      <a href="https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> アンケートデータ統計分析
+                      </a>
+                  </li>
+                  <li>
+                      <a href="https://soukan-jlhkdhkradbnxssy29aqte.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> 相関分析
+                      </a>
+                  </li>
+                  <li>
+                      <a href="https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> 多変量回帰分析
+                      </a>
+                  </li>
+                  <li>
+                      <a href="https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> t検定
+                      </a>
+                  </li>
+                  <li>
+                      <a href="https://rojisthik-buklkg5zeh6oj2gno746ix.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> ロジスティック回帰分析
+                      </a>
+                  </li>
+                  <li>
+                      <a href="https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
+                          <ExternalLink size={16} /> ノンパラメトリック分析
+                      </a>
+                  </li>
+                </ul>
              </div>
           </div>
         );
