@@ -1,13 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-// ▼ アイコン (ChevronDown, ChevronUp, ExternalLink を確実に追加)
 import { 
   ArrowUpRight, X, User, Layers, 
-  Cpu, MessageSquare, Video, BookOpen,
+  Cpu, MessageSquare, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
-  Brain, LineChart, Sparkles, Users, 
-  ChevronDown, ChevronUp, ExternalLink 
+  Brain, LineChart, Sparkles, Users, ChevronDown, ChevronUp, ExternalLink
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,33 +14,10 @@ import { useRouter } from "next/navigation";
 // ▼ データ設定エリア
 // ==========================================
 
-const LOGO_OP_PATH = "/MieeL.png";    
-const LOGO_MAIN_PATH = "/MieeL2.png"; 
+const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用
+const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用
 
-// 1. MieeL 各機能
-const MieeLApps = [
-  { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
-  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "/page/page1" },
-  { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "/page/page2" },
-  { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "/page/page5" },
-  { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "/page/page4" },
-  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "/page/page3" },
-  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "/page/page7" },
-  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "/page/page6" },
-  { id: "08", title: "研究・分析", en: "ANALYSIS & TOOLS", href: "/page/page8" },
-];
-
-// 2. 分析ツール一覧
-const analysisTools = [
-  { jp: "応用行動分析", en: "Applied Behavior Analysis", href: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamlit.app/" },
-  { jp: "機能的行動評価", en: "Functional Behavior Assessment", href: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/" },
-  { jp: "アンケート統計分析", en: "Survey Statistical Analysis", href: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" },
-  { jp: "多変量回帰分析", en: "Multivariate Regression", href: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" },
-  { jp: "t検定・統計ツール", en: "T-Test & Statistical Tools", href: "https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" },
-  { jp: "ノンパラメトリック", en: "Non-Parametric Analysis", href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" },
-];
-
-// 3. マニュアルデータ
+// 2. マニュアルデータ (モーダル表示用)
 const manuals = [
   {
     title: "指導支援内容 マニュアル",
@@ -71,7 +46,7 @@ const manuals = [
   }
 ];
 
-// 4. つながり (Network)
+// 3. つながり (Network)
 const networkData = [
   { name: "IT Teacher A", role: "High School Info Dept.", desc: "Network Specialist" },
   { name: "IT Teacher B", role: "Special Ed. Coordinator", desc: "iPad Utilization" },
@@ -89,6 +64,7 @@ export default function Home() {
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const router = useRouter();
 
+  // 初回のみオープニングアニメーション
   useEffect(() => {
     const hasVisited = sessionStorage.getItem("mieel_visited");
     if (hasVisited) {
@@ -97,7 +73,10 @@ export default function Home() {
       sessionStorage.setItem("mieel_visited", "true");
       const timer1 = setTimeout(() => setOpPhase(1), 2000);
       const timer2 = setTimeout(() => setOpPhase(2), 4500);
-      return () => { clearTimeout(timer1); clearTimeout(timer2); };
+      return () => { 
+        clearTimeout(timer1); 
+        clearTimeout(timer2); 
+      };
     }
   }, []);
 
@@ -108,9 +87,9 @@ export default function Home() {
     },
   };
 
-  const goToFeedback = () => {
-    router.push("/fpafe");
-  };
+  // ページ遷移用関数
+  const goToFeedback = () => router.push("/fpafe");
+  const goToSelect = () => router.push("/page/select");
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
@@ -153,7 +132,7 @@ export default function Home() {
       {/* 背景パララックス */}
       <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
         <motion.div style={{ y }} className="w-full h-[120%] -mt-[10%] bg-[url('https://i.imgur.com/AbUxfxP.png')] bg-cover bg-center grayscale" />
-        <div className="absolute inset-0 bg-white/30" />
+        <div className="absolute inset-0 bg-white/40" />
       </div>
 
       {/* 固定ヘッダー */}
@@ -192,7 +171,6 @@ export default function Home() {
              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1.5, delay: 0.6 }}
              className="relative pl-8 ml-2 max-w-3xl"
            >
-             {/* 背景にうっすら光 */}
              <div className="absolute inset-0 -left-4 bg-gradient-to-r from-blue-50 to-transparent -z-10 blur-xl rounded-full opacity-50"></div>
              <div className="border-l-4 border-blue-600 pl-6">
                <p className="text-slate-900 text-2xl md:text-4xl font-bold mb-4 leading-tight">
@@ -217,7 +195,7 @@ export default function Home() {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24">
-                 <FeatureItem icon={<Brain size={48} />} title="AI Assistant" desc="指導案や支援計画の作成をAIがサポート。事務作業時間を大幅に短縮し、子どもと向き合う時間を創出します。" color="bg-purple-50 text-purple-600" />
+                 <FeatureItem icon={<Brain size={48} />} title="AI Assistant" desc="指導案や支援計画の作成をAIが強力にサポート。事務作業時間を短縮し、子どもと向き合う時間を創出します。" color="bg-purple-50 text-purple-600" />
                  <FeatureItem icon={<LineChart size={48} />} title="Visualization" desc="発達検査の結果や行動記録をチャートで見える化。直感的に状況を把握し、チームでの共有を円滑にします。" color="bg-green-50 text-green-600" />
                  <FeatureItem icon={<Sparkles size={48} />} title="Evidence" desc="専門的な統計分析ツールを内蔵。実践の成果をデータで検証し、より確かな教育実践へとつなげます。" color="bg-orange-50 text-orange-600" />
               </div>
@@ -225,17 +203,24 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー (MieeL 各機能) */}
+        {/* 3. メインメニュー (カード表示) */}
         <section className="px-6 md:px-20 mb-40">
           <div className="flex items-baseline justify-between mb-10 border-b border-gray-200 pb-4">
-             <h3 className="text-3xl md:text-4xl font-black text-slate-900">MieeL 各機能</h3>
-             <p className="text-sm font-bold text-gray-400 tracking-widest hidden md:block">APPLICATIONS</p>
+             <h3 className="text-3xl md:text-4xl font-black text-slate-900">MENU</h3>
+             <p className="text-sm font-bold text-gray-400 tracking-widest hidden md:block">SELECT FUNCTION</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <StaggeredMenu>
-                {/* クリックでモーダルを開き、そこに詳細を表示 */}
-                <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
+                {/* ★最重要: MieeL 各機能 (ここを押すと /page/select へ遷移) */}
+                <MenuCard 
+                  title="MieeL 各機能" 
+                  sub="APPLICATIONS" 
+                  icon={<Layers />} 
+                  onClick={goToSelect} 
+                  big 
+                />
+                
                 <MenuCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
                 <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
                 <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
@@ -276,7 +261,7 @@ export default function Home() {
 function ScrollReveal({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, margin: "-50px" }}
+      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
       variants={{
         hidden: { opacity: 0, y: 40 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
@@ -290,7 +275,7 @@ function ScrollReveal({ children }: { children: React.ReactNode }) {
 function StaggeredMenu({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false, margin: "-50px" }}
+      initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.1 }}
       variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
       className="contents"
     >
@@ -311,34 +296,38 @@ function FeatureItem({ icon, title, desc, color }: { icon: any, title: string, d
   );
 }
 
-// メニューカード
+// ★ MenuCard (ホバーで黒く反転する演出)
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   return (
     <motion.div
+      initial="hidden" whileInView="visible" viewport={{ once: false }}
       variants={{
         hidden: { opacity: 0, y: 30 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
       }}
       onClick={onClick}
+      // ▼ マウスオーバーで背景黒・文字白
       whileHover={{ backgroundColor: "#1a1a1a", color: "#ffffff", scale: 1.02 }}
       className={`
-        bg-white border border-gray-200 p-10 md:p-12 rounded-3xl cursor-pointer group relative overflow-hidden flex flex-col justify-between h-full
-        hover:shadow-2xl hover:border-gray-800 transition-colors duration-300
+        bg-white border border-gray-200 p-10 md:p-14 
+        cursor-pointer group relative overflow-hidden flex flex-col justify-between
+        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-3xl
+        hover:shadow-2xl hover:border-black transition-colors duration-300
       `}
     >
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex justify-between items-start">
         <div className="text-gray-400 group-hover:text-white transition-colors duration-300">{icon}</div>
         <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        <p className="font-mono text-xs text-gray-500 group-hover:text-white/60 mb-3 tracking-widest">{sub}</p>
-        <h3 className="text-2xl md:text-3xl font-black text-slate-900 group-hover:text-white">{title}</h3>
+        <p className="font-mono text-xs text-gray-500 group-hover:text-white/80 mb-3 tracking-widest">{sub}</p>
+        <h3 className="text-3xl md:text-4xl font-black text-slate-900 group-hover:text-white">{title}</h3>
       </div>
     </motion.div>
   );
 }
 
-// おしゃれなフッターボタン (光るカード)
+// おしゃれなフッターボタン (光る影)
 function StylishFooterBtn({ title, sub, icon, onClick, color }: { title: string, sub: string, icon: any, onClick: () => void, color: string }) {
   const colors: any = {
     blue: "hover:border-blue-500 hover:shadow-[0_0_25px_rgba(59,130,246,0.3)]",
@@ -380,52 +369,31 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
 }
 
 // ==========================================
-// ▼ モーダルコンテンツ (マニュアルはアコーディオン)
+// ▼ モーダルコンテンツ
 // ==========================================
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   const renderContent = () => {
     switch(page) {
-      case 'apps':
-        return (
-          <div>
-             <ModalHeader title="MieeL 各機能" sub="現場の困りごとを解決するアプリケーション" />
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {MieeLApps.map((app, i) => (
-                  app.href.startsWith("http") ? (
-                    <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
-                       className="block p-8 bg-white/5 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl"
-                    >
-                      <div className="flex justify-between mb-6">
-                         <span className="font-mono text-xs text-gray-500 group-hover:text-white/60 tracking-widest">{app.id}</span>
-                         <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
-                      <p className="text-xs text-gray-600 group-hover:text-white/80 font-mono tracking-wide">{app.en}</p>
-                    </a>
-                  ) : (
-                    <Link key={i} href={app.href} 
-                       className="block p-8 bg-white/5 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl"
-                    >
-                      <div className="flex justify-between mb-6">
-                         <span className="font-mono text-xs text-gray-500 group-hover:text-white/60 tracking-widest">{app.id}</span>
-                         <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
-                      <p className="text-xs text-gray-600 group-hover:text-white/80 font-mono tracking-wide">{app.en}</p>
-                    </Link>
-                  )
-                ))}
-             </div>
-          </div>
-        );
-
       case 'manual':
         return (
           <div>
              <ModalHeader title="各機能マニュアル" sub="アプリの使い方・活用ガイド" />
              <div className="space-y-6">
                {manuals.map((manual, i) => (
-                 <ManualAccordion key={i} manual={manual} index={i} />
+                 <AccordionItem key={i} title={manual.title} icon={<BookOpen size={20} />}>
+                   <p className="text-gray-600 mb-6 text-sm leading-loose border-l-2 border-blue-500 pl-4">{manual.desc}</p>
+                   <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+                     <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
+                     <ul className="space-y-3">
+                       {manual.steps.map((step, idx) => (
+                         <li key={idx} className="flex gap-4 text-sm text-slate-700 items-start leading-relaxed">
+                           <CheckCircle size={18} className="shrink-0 mt-0.5 text-blue-500" />
+                           {step}
+                         </li>
+                       ))}
+                     </ul>
+                   </div>
+                 </AccordionItem>
                ))}
              </div>
           </div>
@@ -478,27 +446,11 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
-             
              <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl text-center mb-10">
                 <p className="text-gray-500 mb-6 font-bold">解説付きのメインページはこちら</p>
                 <Link href="/page/page9" className="inline-block px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors shadow-lg">
                    分析方法ページへ移動 ➡
                 </Link>
-             </div>
-
-             <h4 className="text-lg font-bold mb-4 text-slate-900 flex items-center gap-2"><ExternalLink size={20}/> ツール直接リンク</h4>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {analysisTools.map((tool, i) => (
-                  <a key={i} href={tool.href} target="_blank" rel="noopener noreferrer" className="bg-white p-6 border border-gray-200 rounded-xl hover:bg-black hover:text-white transition-colors duration-300 group block shadow-sm">
-                    <div className="flex justify-between items-start">
-                       <div>
-                          <span className="font-bold text-lg block mb-1 group-hover:text-white text-slate-900">{tool.jp}</span>
-                          <span className="font-mono text-xs text-gray-400 group-hover:text-white/60 tracking-wider">{tool.en}</span>
-                       </div>
-                       <ArrowUpRight size={16} className="text-gray-300 group-hover:text-white" />
-                    </div>
-                  </a>
-                ))}
              </div>
           </div>
         );
@@ -506,7 +458,7 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
       case 'profile':
         return (
           <div className="py-20 text-center">
-             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-600"><User size={48} className="text-blue-600" /></div>
+             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-500"><User size={48} className="text-blue-600" /></div>
              <h2 className="text-5xl font-black mb-4 text-slate-900">KOYAMA</h2>
              <p className="text-blue-600 text-xs font-bold tracking-widest mb-12">ADMINISTRATOR</p>
              <p className="text-gray-600 leading-loose max-w-xl mx-auto">
@@ -571,28 +523,22 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
   );
 }
 
-// アコーディオンコンポーネント (マニュアル用)
-function ManualAccordion({ manual, index }: { manual: any, index: number }) {
+// アコーディオンコンポーネント
+function AccordionItem({ title, icon, children }: { title: string, icon: any, children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm transition-all hover:shadow-md"
-    >
+    <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm transition-all hover:shadow-md">
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-6 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-4 text-lg font-bold text-slate-800">
-          <span className="text-blue-600"><BookOpen size={24}/></span>
-          <span>{manual.title}</span>
+          <span className="text-blue-600">{icon}</span>
+          <span>{title}</span>
         </div>
         {isOpen ? <ChevronUp className="text-gray-400" /> : <ChevronDown className="text-gray-400" />}
       </button>
-      
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -601,26 +547,13 @@ function ManualAccordion({ manual, index }: { manual: any, index: number }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-gray-100"
           >
-            <div className="p-8 bg-slate-50">
-               <p className="text-gray-600 mb-6 text-sm leading-loose border-l-4 border-blue-500 pl-4 bg-white p-4 rounded-r-lg">
-                 {manual.desc}
-               </p>
-               <div className="bg-white p-6 rounded-2xl border border-gray-200">
-                 <h4 className="text-xs font-bold text-blue-600 mb-4 tracking-widest">HOW TO USE</h4>
-                 <ul className="space-y-3">
-                   {manual.steps.map((step: string, idx: number) => (
-                     <li key={idx} className="flex gap-4 text-sm text-slate-700 items-start leading-relaxed">
-                       <CheckCircle size={18} className="shrink-0 mt-0.5 text-green-500" />
-                       {step}
-                     </li>
-                   ))}
-                 </ul>
-               </div>
+            <div className="p-8 bg-gray-50">
+              {children}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
