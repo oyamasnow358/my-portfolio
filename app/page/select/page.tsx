@@ -70,7 +70,7 @@ const MieeLApps = [
     id: "08", 
     title: "研究・分析", 
     en: "ANALYSIS & TOOLS", 
-    href: "/page/page9",
+    href: "/page/page8",
     icon: <Activity />,
     desc: "統計分析・行動分析ツール集"
   },
