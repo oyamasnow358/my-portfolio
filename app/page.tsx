@@ -5,7 +5,8 @@ import {
   ArrowUpRight, X, User, Layers, 
   Cpu, MessageSquare, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
-  Brain, LineChart, Sparkles, Users, ChevronDown, ChevronUp, ExternalLink
+  Brain, LineChart, Sparkles, Users, ChevronDown, ChevronUp, ExternalLink,
+  PieChart, ScatterChart, Sigma, GitGraph, Binary, BarChart3, ShieldCheck, Mail
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,6 +52,16 @@ const networkData = [
   { name: "IT Teacher A", role: "High School Info Dept.", desc: "Network Specialist" },
   { name: "IT Teacher B", role: "Special Ed. Coordinator", desc: "iPad Utilization" },
   { name: "Researcher C", role: "University Lab", desc: "Data Analysis Support" },
+];
+
+// 4. 分析ツールデータ
+const analysisTools = [
+  { name: "アンケートデータ統計分析", url: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/", icon: <PieChart size={24} />, desc: "アンケート結果を集計し、視覚的なグラフと基礎統計量を出力します。" },
+  { name: "相関分析", url: "https://soukan-jlhkdhkradbnxssy29aqte.streamlit.app/", icon: <ScatterChart size={24} />, desc: "2つの変数の関係性を分析し、相関係数と散布図を表示します。" },
+  { name: "多変量回帰分析", url: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/", icon: <LineChart size={24} />, desc: "複数の要因から結果を予測するモデルを作成し、要因の影響度を分析します。" },
+  { name: "t検定", url: "https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/", icon: <Sigma size={24} />, desc: "2つのグループ間の平均値に有意な差があるかどうかを検定します。" },
+  { name: "ロジスティック回帰分析", url: "https://rojisthik-buklkg5zeh6oj2gno746ix.streamlit.app/", icon: <Binary size={24} />, desc: "事象の発生確率を予測・分析するための回帰分析ツールです。" },
+  { name: "ノンパラメトリック分析", url: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/", icon: <BarChart3 size={24} />, desc: "データの分布を仮定しない統計手法を用いて、グループ間の差を分析します。" },
 ];
 
 // ==========================================
@@ -230,16 +241,18 @@ export default function Home() {
         </section>
 
         {/* 4. フッター */}
-        {/* 背景を黒に変更 (bg-black, text-white, border-gray-800) */}
+        {/* 背景を黒に変更し、テキストを白に。ボーダーを少し目立たない色に。 */}
         <footer className="bg-black text-white border-t border-gray-800 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32 max-w-7xl mx-auto">
+            {/* ボタン自体は bg-white で維持されるので、黒背景に浮き出る */}
             <StylishFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={24}/>} onClick={() => setSelectedPage('profile')} color="blue" />
             <StylishFooterBtn title="FEEDBACK" sub="ご意見・ご要望" icon={<MessageSquare size={24}/>} onClick={goToFeedback} color="emerald" />
             <StylishFooterBtn title="SYSTEM" sub="システム構成" icon={<Cpu size={24}/>} onClick={() => setSelectedPage('system')} color="purple" />
             <StylishFooterBtn title="TERMS OF USE" sub="利用規約" icon={<FileText size={24}/>} onClick={() => setSelectedPage('terms')} color="gray" />
           </div>
-          <div className="text-center text-gray-500 text-xs tracking-widest">
-            &copy; 2025 MieeL Project. All Rights Reserved.
+          <div className="flex flex-col md:flex-row justify-between items-center text-gray-500 text-xs tracking-widest border-t border-gray-900 pt-8">
+            <p>MieeL Project.</p>
+            <p>&copy; 2025 All Rights Reserved.</p>
           </div>
         </footer>
       </div>
@@ -344,12 +357,12 @@ function StylishFooterBtn({ title, sub, icon, onClick, color }: { title: string,
       whileTap={{ scale: 0.98 }}
       className={`
         flex flex-col items-start justify-center p-8 w-full text-left 
-        bg-white border border-gray-200 rounded-2xl transition-all duration-300 group shadow-sm
+        bg-white text-slate-900 border border-gray-200 rounded-2xl transition-all duration-300 group shadow-sm
         ${colors[color]}
       `}
     >
       <div className="mb-4 text-gray-400 group-hover:text-slate-900 transition-colors">{icon}</div>
-      <h4 className="text-lg font-bold tracking-widest mb-1 text-slate-800">{title}</h4>
+      <h4 className="text-lg font-bold tracking-widest mb-1">{title}</h4>
       <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{sub}</p>
     </motion.button>
   );
@@ -447,54 +460,94 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
-             <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl mb-10">
-                <h4 className="font-bold text-slate-900 mb-6 border-b pb-2">利用可能な分析アプリ一覧</h4>
-                <ul className="space-y-4 text-left">
-                  <li>
-                      <a href="https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> アンケートデータ統計分析
-                      </a>
-                  </li>
-                  <li>
-                      <a href="https://soukan-jlhkdhkradbnxssy29aqte.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> 相関分析
-                      </a>
-                  </li>
-                  <li>
-                      <a href="https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> 多変量回帰分析
-                      </a>
-                  </li>
-                  <li>
-                      <a href="https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> t検定
-                      </a>
-                  </li>
-                  <li>
-                      <a href="https://rojisthik-buklkg5zeh6oj2gno746ix.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> ロジスティック回帰分析
-                      </a>
-                  </li>
-                  <li>
-                      <a href="https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium">
-                          <ExternalLink size={16} /> ノンパラメトリック分析
-                      </a>
-                  </li>
-                </ul>
+             <p className="text-gray-600 mb-10 leading-relaxed">
+               研究活動や日々の実践評価に役立つ統計分析ツールです。インストール不要で、ブラウザ上で安全にデータを処理・可視化できます。
+             </p>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {analysisTools.map((tool, i) => (
+                  <a 
+                    key={i} 
+                    href={tool.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group block p-8 rounded-3xl border border-gray-200 bg-white hover:border-blue-500 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <ExternalLink size={60} />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      {tool.icon}
+                    </div>
+                    <h4 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
+                      {tool.name}
+                    </h4>
+                    <p className="text-xs text-gray-500 leading-loose">
+                      {tool.desc}
+                    </p>
+                    <div className="mt-6 flex items-center text-xs font-bold text-blue-500 tracking-widest">
+                      OPEN APP <ArrowUpRight size={14} className="ml-1" />
+                    </div>
+                  </a>
+                ))}
              </div>
           </div>
         );
 
       case 'profile':
         return (
-          <div className="py-20 text-center">
-             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8 text-gray-500"><User size={48} className="text-blue-600" /></div>
-             <h2 className="text-5xl font-black mb-4 text-slate-900">KOYAMA</h2>
-             <p className="text-blue-600 text-xs font-bold tracking-widest mb-12">ADMINISTRATOR</p>
-             <p className="text-gray-600 leading-loose max-w-xl mx-auto">
-                埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
-                プログラミング（Python, React）を活用し、特別支援教育の課題解決に取り組んでいます。
-             </p>
+          <div>
+            <ModalHeader title="ADMINISTRATOR" sub="開発者・管理者について" />
+            
+            {/* メインプロフィールカード */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-[2.5rem] p-10 md:p-14 shadow-2xl mb-12">
+               <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-blue-500 rounded-full blur-[100px] opacity-30"></div>
+               
+               <div className="flex flex-col md:flex-row gap-10 items-center relative z-10">
+                 <div className="shrink-0">
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 bg-white/10 flex items-center justify-center backdrop-blur-sm shadow-xl">
+                      <User size={64} className="text-white/90" />
+                    </div>
+                 </div>
+                 <div className="text-center md:text-left">
+                    <div className="inline-block px-4 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold tracking-widest mb-4">
+                      LEAD DEVELOPER
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-2">KOYAMA</h2>
+                    <p className="text-lg text-gray-300 font-medium mb-6">Special Education Teacher</p>
+                    <p className="text-sm text-gray-400 leading-loose max-w-lg">
+                      埼玉県立岩槻はるかぜ特別支援学校 教諭。<br />
+                      「現場の課題は、現場の手で解決する」をモットーに、教育とエンジニアリングの境界線で活動しています。
+                    </p>
+                 </div>
+               </div>
+            </div>
+
+            {/* スキル・ミッション */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="p-10 bg-gray-50 rounded-3xl border border-gray-100">
+                  <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <Cpu size={20} className="text-purple-600" /> Technical Skills
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {['Python', 'Next.js', 'React', 'TypeScript', 'Streamlit', 'Data Analysis', 'GAS'].map(skill => (
+                      <span key={skill} className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 shadow-sm">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+               </div>
+               <div className="p-10 bg-blue-50 rounded-3xl border border-blue-100">
+                  <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                    <Mail size={20} className="text-blue-600" /> Contact
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                    開発に関するお問い合わせ、共同研究のご依頼等は以下よりお願いいたします。
+                  </p>
+                  <a href="mailto:contact@example.com" className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                    Send Email <ArrowUpRight size={14} />
+                  </a>
+               </div>
+            </div>
           </div>
         );
        case 'system':
@@ -510,16 +563,44 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
          );
        case 'terms':
          return (
-            <div className="py-10">
+            <div>
                <ModalHeader title="TERMS OF USE" sub="利用規約" />
-               <div className="prose prose-slate max-w-none text-gray-600 leading-loose">
-                 <p>本サイトは、特別支援教育の発展を目的とした非営利の研究用プラットフォームです。</p>
-                 <ul className="list-disc pl-5 space-y-4">
-                   <li>本サイト上のツールは、どなたでも自由にご利用いただけます。</li>
-                   <li>個人情報（児童生徒の氏名など）を直接入力する際は、各自治体のガイドラインに従ってください。</li>
-                   <li>本サイトを利用して得られた結果（指導案や分析結果）の利用責任は利用者に帰属します。</li>
-                   <li>研究発表等で本サイトのツールを利用される場合は、管理者までご一報いただけますと幸いです。</li>
-                 </ul>
+               <div className="bg-gray-50 p-8 md:p-12 rounded-[2rem] border border-gray-200">
+                  <div className="prose prose-slate max-w-none text-slate-600">
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+                      <ShieldCheck className="text-gray-400" /> 第1条（目的）
+                    </h3>
+                    <p className="text-sm leading-loose mb-8">
+                      本サイト「MieeL」（以下、「本サービス」）は、特別支援教育におけるICT活用およびデータ駆動型教育の実践研究を目的とした、非営利のプラットフォームです。
+                    </p>
+
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+                      <ShieldCheck className="text-gray-400" /> 第2条（利用範囲）
+                    </h3>
+                    <p className="text-sm leading-loose mb-8">
+                      本サービス上のツールは、教育関係者、研究者、保護者等、どなたでも無償でご利用いただけます。ただし、本サービスの全部または一部を営利目的で再配布・販売することは禁止します。
+                    </p>
+
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+                      <ShieldCheck className="text-gray-400" /> 第3条（個人情報の扱い）
+                    </h3>
+                    <ul className="list-disc pl-5 text-sm leading-loose mb-8 space-y-2">
+                      <li>本サービス内で生成されるデータ（指導案、チャート等）は、利用者個人のブラウザ内またはローカル環境で処理されます。サーバーへ個人情報が送信・保存されることはありません。</li>
+                      <li>ただし、生成されたデータを外部（ChatGPT等）に入力する際は、各サービスの利用規約および所属組織（自治体等）の個人情報保護ガイドラインを遵守してください。個人を特定できる情報（氏名、生年月日等）の直接入力は推奨しません。</li>
+                    </ul>
+
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
+                      <ShieldCheck className="text-gray-400" /> 第4条（免責事項）
+                    </h3>
+                    <p className="text-sm leading-loose mb-8">
+                      管理者は、本サービスの利用により生じた損害、トラブル等について、一切の責任を負いません。生成された分析結果や指導案の採否および活用については、利用者自身の責任において判断してください。
+                    </p>
+
+                    <div className="mt-12 pt-8 border-t border-gray-200 text-xs text-gray-400 text-center">
+                      制定日：2024年4月1日<br/>
+                      改定日：2025年1月1日
+                    </div>
+                  </div>
                </div>
             </div>
          );
