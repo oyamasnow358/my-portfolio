@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { 
   ArrowUpRight, X, User, Layers, 
-  Cpu, MessageSquare, BookOpen,
+  Cpu, MessageSquare, Video, BookOpen,
   School, Lightbulb, Activity, FileText, CheckCircle,
   Brain, LineChart, Sparkles, Users, ChevronDown, ChevronUp, ExternalLink
 } from "lucide-react";
@@ -14,10 +14,33 @@ import { useRouter } from "next/navigation";
 // ▼ データ設定エリア
 // ==========================================
 
-const LOGO_OP_PATH = "/MieeL.png";    // 黒背景用
-const LOGO_MAIN_PATH = "/MieeL2.png"; // 白背景用
+const LOGO_OP_PATH = "/MieeL.png";    
+const LOGO_MAIN_PATH = "/MieeL2.png"; 
 
-// 2. マニュアルデータ (モーダル表示用)
+// 1. MieeL 各機能
+const MieeLApps = [
+  { id: "00", title: "TOPページ", en: "HOME", href: "https://aspecial-education-app.onrender.com/" },
+  { id: "01", title: "指導支援検索", en: "SEARCH SUPPORT", href: "/page/page1" },
+  { id: "02", title: "発達チャート", en: "DEVELOPMENT CHART", href: "/page/page2" },
+  { id: "03", title: "AI 指導案作成", en: "LESSON PLAN AI", href: "/page/page5" },
+  { id: "04", title: "AI 支援/指導計画作成", en: "PLANNING ASSIST", href: "/page/page4" },
+  { id: "05", title: "早引き学習指導要領", en: "GUIDELINES", href: "/page/page3" },
+  { id: "06", title: "授業カードライブラリ", en: "LESSON CARD LIBRARY", href: "/page/page7" },
+  { id: "07", title: "動画ギャラリー", en: "VIDEO GALLERY", href: "/page/page6" },
+  { id: "08", title: "研究・分析", en: "ANALYSIS & TOOLS", href: "/page/page8" },
+];
+
+// 2. 分析ツール一覧
+const analysisTools = [
+  { jp: "応用行動分析", en: "Applied Behavior Analysis", href: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamlit.app/" },
+  { jp: "機能的行動評価", en: "Functional Behavior Assessment", href: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/" },
+  { jp: "アンケート統計分析", en: "Survey Statistical Analysis", href: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/" },
+  { jp: "多変量回帰分析", en: "Multivariate Regression", href: "https://kaikiapp-tjtcczfvlg2pyhd9bjxwom.streamlit.app/" },
+  { jp: "t検定・統計ツール", en: "T-Test & Statistical Tools", href: "https://tkentei-flhmnqnq6dti6oyy9xnktr.streamlit.app/" },
+  { jp: "ノンパラメトリック", en: "Non-Parametric Analysis", href: "https://nonparametoric-nkk2awu6yv9xutzrjmrsxv.streamlit.app/" },
+];
+
+// 3. マニュアルデータ
 const manuals = [
   {
     title: "指導支援内容 マニュアル",
@@ -46,7 +69,7 @@ const manuals = [
   }
 ];
 
-// 3. つながり (Network)
+// 4. つながり (Network)
 const networkData = [
   { name: "IT Teacher A", role: "High School Info Dept.", desc: "Network Specialist" },
   { name: "IT Teacher B", role: "Special Ed. Coordinator", desc: "iPad Utilization" },
@@ -64,7 +87,6 @@ export default function Home() {
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const router = useRouter();
 
-  // 初回のみオープニングアニメーション
   useEffect(() => {
     const hasVisited = sessionStorage.getItem("mieel_visited");
     if (hasVisited) {
@@ -73,10 +95,7 @@ export default function Home() {
       sessionStorage.setItem("mieel_visited", "true");
       const timer1 = setTimeout(() => setOpPhase(1), 2000);
       const timer2 = setTimeout(() => setOpPhase(2), 4500);
-      return () => { 
-        clearTimeout(timer1); 
-        clearTimeout(timer2); 
-      };
+      return () => { clearTimeout(timer1); clearTimeout(timer2); };
     }
   }, []);
 
@@ -87,14 +106,14 @@ export default function Home() {
     },
   };
 
-  // ページ遷移用関数
-  const goToFeedback = () => router.push("/fpafe");
-  const goToSelect = () => router.push("/page/select");
+  const goToFeedback = () => {
+    router.push("/fpafe");
+  };
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden relative">
       
-      {/* 0. オープニングアニメーション (黒背景) */}
+      {/* 0. オープニングアニメーション */}
       <AnimatePresence mode="wait">
         {opPhase < 2 && (
           <motion.div
@@ -177,7 +196,7 @@ export default function Home() {
                  Data-Driven Education.
                </p>
                <p className="text-gray-600 font-medium text-lg md:text-xl leading-loose">
-                 特別支援教育の現場における「経験」に「データ」をプラス。<br/>
+                 特別支援教育の現場における<span className="text-blue-600 font-bold">「経験」</span>に<span className="text-blue-600 font-bold">「データ」</span>をプラス。<br/>
                  指導案作成から統計分析までを一元化したプラットフォーム。
                </p>
              </div>
@@ -203,24 +222,17 @@ export default function Home() {
           </ScrollReveal>
         </section>
 
-        {/* 3. メインメニュー (カード表示) */}
+        {/* 3. メインメニュー */}
         <section className="px-6 md:px-20 mb-40">
           <div className="flex items-baseline justify-between mb-10 border-b border-gray-200 pb-4">
-             <h3 className="text-3xl md:text-4xl font-black text-slate-900">MENU</h3>
-             <p className="text-sm font-bold text-gray-400 tracking-widest hidden md:block">SELECT FUNCTION</p>
+             <h3 className="text-3xl md:text-4xl font-black text-slate-900">MieeL 各機能</h3>
+             <p className="text-sm font-bold text-gray-400 tracking-widest hidden md:block">APPLICATIONS</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
              <StaggeredMenu>
-                {/* ★最重要: MieeL 各機能 (ここを押すと /page/select へ遷移) */}
-                <MenuCard 
-                  title="MieeL 各機能" 
-                  sub="APPLICATIONS" 
-                  icon={<Layers />} 
-                  onClick={goToSelect} 
-                  big 
-                />
-                
+                {/* クリックでモーダルを開く */}
+                <MenuCard title="MieeL 各機能" sub="APPLICATIONS" icon={<Layers />} onClick={() => setSelectedPage('apps')} big />
                 <MenuCard title="各機能マニュアル" sub="MANUAL & GUIDE" icon={<BookOpen />} onClick={() => setSelectedPage('manual')} />
                 <MenuCard title="つながり" sub="NETWORK" icon={<Users />} onClick={() => setSelectedPage('network')} />
                 <MenuCard title="導入校" sub="CASE STUDY" icon={<School />} onClick={() => setSelectedPage('school')} />
@@ -229,7 +241,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. フッター */}
+        {/* 4. フッター (★修正: ボタン背景を黒に) */}
         <footer className="bg-white border-t border-gray-200 pt-32 pb-20 px-6 md:px-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32 max-w-7xl mx-auto">
             <StylishFooterBtn title="ADMINISTRATOR" sub="管理者プロフィール" icon={<User size={24}/>} onClick={() => setSelectedPage('profile')} color="blue" />
@@ -243,7 +255,7 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* --- モーダル (詳細ページ) --- */}
+      {/* --- モーダル --- */}
       <AnimatePresence>
         {selectedPage && (
           <PageContent page={selectedPage} onClose={() => setSelectedPage(null)} />
@@ -296,44 +308,40 @@ function FeatureItem({ icon, title, desc, color }: { icon: any, title: string, d
   );
 }
 
-// ★ MenuCard (ホバーで黒く反転する演出)
+// メニューカード
 function MenuCard({ title, sub, icon, onClick, big = false }: { title: string, sub: string, icon: any, onClick: () => void, big?: boolean }) {
   return (
     <motion.div
-      initial="hidden" whileInView="visible" viewport={{ once: false }}
       variants={{
         hidden: { opacity: 0, y: 30 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
       }}
       onClick={onClick}
-      // ▼ マウスオーバーで背景黒・文字白
       whileHover={{ backgroundColor: "#1a1a1a", color: "#ffffff", scale: 1.02 }}
       className={`
-        bg-white border border-gray-200 p-10 md:p-14 
-        cursor-pointer group relative overflow-hidden flex flex-col justify-between
-        ${big ? 'md:col-span-2' : ''} h-[280px] md:h-[350px] rounded-3xl
-        hover:shadow-2xl hover:border-black transition-colors duration-300
+        bg-white border border-gray-200 p-10 md:p-12 rounded-3xl cursor-pointer group relative overflow-hidden flex flex-col justify-between h-full
+        hover:shadow-2xl hover:border-gray-800 transition-colors duration-300
       `}
     >
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start mb-8">
         <div className="text-gray-400 group-hover:text-white transition-colors duration-300">{icon}</div>
         <ArrowUpRight className="text-gray-400 group-hover:text-white transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
       </div>
       <div>
-        <p className="font-mono text-xs text-gray-500 group-hover:text-white/80 mb-3 tracking-widest">{sub}</p>
-        <h3 className="text-3xl md:text-4xl font-black text-slate-900 group-hover:text-white">{title}</h3>
+        <p className="font-mono text-xs text-gray-500 group-hover:text-white/60 mb-3 tracking-widest">{sub}</p>
+        <h3 className="text-2xl md:text-3xl font-black text-slate-900 group-hover:text-white">{title}</h3>
       </div>
     </motion.div>
   );
 }
 
-// おしゃれなフッターボタン (光る影)
+// ★修正: おしゃれな黒背景フッターボタン
 function StylishFooterBtn({ title, sub, icon, onClick, color }: { title: string, sub: string, icon: any, onClick: () => void, color: string }) {
   const colors: any = {
-    blue: "hover:border-blue-500 hover:shadow-[0_0_25px_rgba(59,130,246,0.3)]",
-    emerald: "hover:border-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.3)]",
-    purple: "hover:border-purple-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.3)]",
-    gray: "hover:border-gray-400 hover:shadow-[0_0_25px_rgba(100,116,139,0.2)]",
+    blue: "hover:border-blue-500 hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]",
+    emerald: "hover:border-emerald-500 hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]",
+    purple: "hover:border-purple-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.6)]",
+    gray: "hover:border-gray-400 hover:shadow-[0_0_25px_rgba(100,116,139,0.5)]",
   };
 
   return (
@@ -343,13 +351,13 @@ function StylishFooterBtn({ title, sub, icon, onClick, color }: { title: string,
       whileTap={{ scale: 0.98 }}
       className={`
         flex flex-col items-start justify-center p-8 w-full text-left 
-        bg-white border border-gray-200 rounded-2xl transition-all duration-300 group shadow-sm
+        bg-black border border-gray-800 rounded-2xl transition-all duration-300 group shadow-lg
         ${colors[color]}
       `}
     >
-      <div className="mb-4 text-gray-400 group-hover:text-slate-900 transition-colors">{icon}</div>
-      <h4 className="text-lg font-bold tracking-widest mb-1 text-slate-800">{title}</h4>
-      <p className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors">{sub}</p>
+      <div className="mb-4 text-gray-400 group-hover:text-white transition-colors">{icon}</div>
+      <h4 className="text-lg font-bold tracking-widest mb-1 text-white">{title}</h4>
+      <p className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors">{sub}</p>
     </motion.button>
   );
 }
@@ -372,8 +380,43 @@ function HeaderTag({ icon, label, onClick, color }: { icon: any, label: string, 
 // ▼ モーダルコンテンツ
 // ==========================================
 function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
+  
   const renderContent = () => {
     switch(page) {
+      case 'apps':
+        return (
+          <div>
+             <ModalHeader title="MieeL 各機能" sub="現場の困りごとを解決するアプリケーション" />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {MieeLApps.map((app, i) => (
+                  app.href.startsWith("http") ? (
+                    <a key={i} href={app.href} target="_blank" rel="noopener noreferrer" 
+                       className="block p-8 bg-white/5 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl"
+                    >
+                      <div className="flex justify-between mb-6">
+                         <span className="font-mono text-xs text-gray-500 group-hover:text-white/60 tracking-widest">{app.id}</span>
+                         <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
+                      <p className="text-xs text-gray-600 group-hover:text-white/80 font-mono tracking-wide">{app.en}</p>
+                    </a>
+                  ) : (
+                    <Link key={i} href={app.href} 
+                       className="block p-8 bg-white/5 border border-gray-200 hover:bg-black hover:text-white transition-all duration-500 group rounded-2xl"
+                    >
+                      <div className="flex justify-between mb-6">
+                         <span className="font-mono text-xs text-gray-500 group-hover:text-white/60 tracking-widest">{app.id}</span>
+                         <ArrowUpRight size={18} className="text-gray-400 group-hover:text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </div>
+                      <h3 className="text-xl font-bold mb-2 text-slate-900 group-hover:text-white">{app.title}</h3>
+                      <p className="text-xs text-gray-600 group-hover:text-white/80 font-mono tracking-wide">{app.en}</p>
+                    </Link>
+                  )
+                ))}
+             </div>
+          </div>
+        );
+
       case 'manual':
         return (
           <div>
@@ -442,15 +485,32 @@ function PageContent({ page, onClose }: { page: string, onClose: () => void }) {
           </div>
         );
 
+      // ★修正: 分析ツールの一覧を復活
       case 'tools':
         return (
           <div>
              <ModalHeader title="Analysis Tools" sub="研究論文・データ分析のための専門ツール" />
+             
              <div className="p-8 bg-gray-50 border border-gray-200 rounded-2xl text-center mb-10">
                 <p className="text-gray-500 mb-6 font-bold">解説付きのメインページはこちら</p>
                 <Link href="/page/page9" className="inline-block px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-500 transition-colors shadow-lg">
                    分析方法ページへ移動 ➡
                 </Link>
+             </div>
+
+             <h4 className="text-lg font-bold mb-4 text-slate-900 flex items-center gap-2"><ExternalLink size={20}/> ツール直接リンク</h4>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {analysisTools.map((tool, i) => (
+                  <a key={i} href={tool.href} target="_blank" rel="noopener noreferrer" className="bg-white p-6 border border-gray-200 rounded-xl hover:bg-black hover:text-white transition-colors duration-300 group block shadow-sm">
+                    <div className="flex justify-between items-start">
+                       <div>
+                          <span className="font-bold text-lg block mb-1 group-hover:text-white text-slate-900">{tool.jp}</span>
+                          <span className="font-mono text-xs text-gray-400 group-hover:text-white/60 tracking-wider">{tool.en}</span>
+                       </div>
+                       <ArrowUpRight size={16} className="text-gray-300 group-hover:text-white" />
+                    </div>
+                  </a>
+                ))}
              </div>
           </div>
         );
@@ -560,7 +620,7 @@ function AccordionItem({ title, icon, children }: { title: string, icon: any, ch
 function ModalHeader({ title, sub }: { title: string, sub: string }) {
   return (
     <div className="mb-12 border-b border-gray-100 pb-8">
-      <p className="text-blue-600 text-xs font-bold tracking-widest mb-2">{sub}</p>
+      <p className="text-blue-500 text-xs font-bold tracking-widest mb-2">{sub}</p>
       <h2 className="text-4xl md:text-5xl font-black text-slate-900">{title}</h2>
     </div>
   );
