@@ -79,7 +79,7 @@ const networkData = [
 
 // 4. 分析ツールデータ
 const analysisTools = [
-  { name: "ABA（応用行動分析）", url: "https://abaapppy-k7um2qki5kggexf8qkfxjc.streamli.app/", icon: <PieChart size={24} />, desc: "行動の原理を応用し、望ましい行動を促進します。" },
+  { name: "ABA（応用行動分析）", href: "/page/page9", icon: <PieChart size={24} />, desc: "行動の原理を応用し、望ましい行動を促進します。" },
   { name: "FBA/PBS", url: "https://kinoukoudou-ptfpnkq3uqgaorabcyzgf2.streamlit.app/", icon: <PieChart size={24} />, desc: "問題行動の原因を探り、前向きな支援計画を立てます。" },
   { name: "アンケートデータ統計分析", url: "https://annketo12345py-edm3ajzwtsmmuxbm8qbamr.streamlit.app/", icon: <PieChart size={24} />, desc: "アンケート結果を集計し、視覚的なグラフと基礎統計量を出力します。" },
   { name: "相関分析", url: "https://soukan-jlhkdhkradbnxssy29aqte.streamlit.app/", icon: <ScatterChart size={24} />, desc: "2つの変数の関係性を分析し、相関係数と散布図を表示します。" },
